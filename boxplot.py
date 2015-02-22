@@ -26,7 +26,7 @@ distribution_names = {
 }
 
 data = {}
-for line in open("orson.txt"):
+for line in open("profile.txt"):
     size, distribution, algo, *results = line.split()
     size = int(size)
     distribution = distribution_names[distribution]
