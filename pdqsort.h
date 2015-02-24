@@ -11,11 +11,17 @@
 #endif
 
 
-namespace detail {
+namespace pdqsort_detail {
     using std::swap;
 
-    // Constants used to tune the sorting algorithm.
-    enum { insertion_sort_threshold = 24 };
+    enum {
+        // Partitions below this size are sorted using insertion sort.
+        insertion_sort_threshold = 24,
+
+        // When we detect an already sorted partition, attempt an insertion sort that allows this
+        // amount of elements to be out of place before giving up.
+        partial_insertion_sort_limit = 8
+    };
 
     // Returns floor(log2(n)), assumes n > 0.
     template<class T>
@@ -70,13 +76,16 @@ namespace detail {
         }
     }
 
-    // TODO: implement binary search
+    // Attempts to use insertion sort on [begin, end). Will return false if more than
+    // partial_insertion_sort_limit elements were out of place, and abort sorting. Otherwise
+    // it will succesfully sort and return true.
     template<class Iter, class Compare>
-    inline bool partial_insertion_sort(Iter begin, Iter end, Compare comp, int limit) {
-        if (begin == end) return true; // TODO: this check is probably unnecessary
+    inline bool partial_insertion_sort(Iter begin, Iter end, Compare comp) {
+        if (begin == end) return true;
 
+        int limit = 0;
         for (Iter cur = begin + 1; cur != end; ++cur) {
-            if (limit <= 0) return false;
+            if (limit > partial_insertion_sort_limit) return false;
 
             if (comp(*cur, *(cur - 1))) {
                 typename std::iterator_traits<Iter>::value_type tmp(PREFER_MOVE(*cur));
@@ -86,7 +95,7 @@ namespace detail {
 
                 while (sift != begin && comp(tmp, *(sift - 1))) {
                     *sift = PREFER_MOVE(*(sift - 1));
-                    --sift; --limit;
+                    --sift; ++limit;
                 }
 
                 *sift = PREFER_MOVE(tmp);
@@ -192,8 +201,7 @@ namespace detail {
 
 
     template<class Iter, class Compare>
-    inline void pdqsort_loop(Iter begin, Iter end, Compare comp, int depth,
-                            double perc = 0.5, bool leftmost = true) {
+    inline void pdqsort_loop(Iter begin, Iter end, Compare comp, int depth, bool leftmost = true) {
         typedef typename std::iterator_traits<Iter>::value_type T;
         typedef typename std::iterator_traits<Iter>::difference_type diff_t;
 
@@ -209,7 +217,7 @@ namespace detail {
             }
 
             // Choose pivot as median of 3.
-            sort3(begin + size_t((size - 1) * perc), begin, end - 1, comp);
+            sort3(begin + size / 2, begin, end - 1, comp);
 
             // If *(begin - 1) is the end of the right partion of a previous partition operation
             // there is no element in [*begin, end) that is smaller than *(begin - 1). Then if our
@@ -226,44 +234,41 @@ namespace detail {
             Iter pivot_pos = part_result.first;
             bool already_partitioned = part_result.second;
 
-            double pivot_perc = double(pivot_pos - begin) / size;
-            bool highly_unbalanced = pivot_perc < 0.125 || pivot_perc > 0.875;
-
-            // Compute where to look for the next pivot, wrapping [0, 1].
-            perc += 1.61803398875 * (pivot_perc - 0.5);
-            perc -= perc > 1; perc += perc < 0;
+            // Check for a highly unbalanced partition.
+            diff_t pivot_offset = pivot_pos - begin;
+            bool highly_unbalanced = pivot_offset < size / 8 || pivot_offset > (size - size / 8);
 
             // If we got a highly unbalanced partition we reduce the counter that determines the
             // maximum depth. Then we also shuffle some elements to break many patterns.
             if (highly_unbalanced) {
                 --depth;
 
-                diff_t size = pivot_pos - begin;
-                if (size >= insertion_sort_threshold) {
-                    swap(*begin, *(begin + size / 4));
-                    swap(*(pivot_pos - 1), *(pivot_pos - size / 4));
+                diff_t partition_size = pivot_pos - begin;
+                if (partition_size >= insertion_sort_threshold) {
+                    swap(*begin, *(begin + partition_size / 4));
+                    swap(*(pivot_pos - 1), *(pivot_pos - partition_size / 4));
                 }
                 
-                size = end - pivot_pos;
-                if (size >= insertion_sort_threshold) {
-                    swap(*(pivot_pos + 1), *(pivot_pos + size / 4));
-                    swap(*(end - 1), *(end - size / 4));
+                partition_size = end - pivot_pos;
+                if (partition_size >= insertion_sort_threshold) {
+                    swap(*(pivot_pos + 1), *(pivot_pos + partition_size / 4));
+                    swap(*(end - 1), *(end - partition_size / 4));
                 }
             } else {
                 // If we were decently balanced and we tried to sort an already partitioned
                 // sequence try to use insertion sort.
-                if (already_partitioned && 
-                    partial_insertion_sort(begin, pivot_pos, comp, 8) &&
-                    partial_insertion_sort(pivot_pos + 1, end, comp, 8)) return;
+                if (already_partitioned && partial_insertion_sort(begin, pivot_pos, comp)
+                                        && partial_insertion_sort(pivot_pos + 1, end, comp)) return;
             }
                 
-            // Do the left partition first using recursion and do tail recursion elimination for
+            // Sort the left partition first using recursion and do tail recursion elimination for
             // the right-hand partition.
-            pdqsort_loop(begin, pivot_pos, comp, depth, perc, leftmost);
+            pdqsort_loop(begin, pivot_pos, comp, depth, leftmost);
             begin = pivot_pos + 1;
             leftmost = false;
         }
 
+        // We had too many bad partitions, sort the rest using heapsort to guarantee O(n log n).
         std::make_heap(begin, end, comp);
         std::sort_heap(begin, end, comp);
     }
@@ -273,7 +278,7 @@ namespace detail {
 template<class Iter, class Compare>
 inline void pdqsort(Iter begin, Iter end, Compare comp) {
     if (begin == end) return;
-    detail::pdqsort_loop(begin, end, comp, detail::log2(end - begin));
+    pdqsort_detail::pdqsort_loop(begin, end, comp, pdqsort_detail::log2(end - begin));
 }
 
 
