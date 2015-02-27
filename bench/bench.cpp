@@ -9,7 +9,8 @@
 #include <functional>
 #include <string>
 
-#include "pdqsort.h"
+#include "../pdqsort.h"
+#include "timsort.h"
 
 #ifdef _WIN32
     #include <intrin.h>
@@ -103,7 +104,8 @@ int main(int argc, char** argv) {
     std::pair<std::string, SortF> sorts[] = {
         std::make_pair("heapsort", heapsort<std::vector<int>::iterator, std::less<int>>),
         std::make_pair("introsort", std::sort<std::vector<int>::iterator, std::less<int>>),
-        std::make_pair("pdqsort", pdqsort<std::vector<int>::iterator, std::less<int>>)
+        std::make_pair("pdqsort", pdqsort<std::vector<int>::iterator, std::less<int>>),
+        std::make_pair("timsort", gfx::timsort<std::vector<int>::iterator, std::less<int>>)
     };
 
     int sizes[] = {1000000};

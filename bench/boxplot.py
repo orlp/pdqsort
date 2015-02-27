@@ -35,7 +35,9 @@ for filename in os.listdir("profiles"):
 
     size = 10**6
     distributions = ("Shuffled", "Shuffled (16 values)", "All equal", "Ascending", "Descending", "Pipe organ", "Push front", "Push middle")
+
     algos = ("heapsort", "introsort", "pdqsort")
+    if "timsort" in data[size]["Shuffled"]: algos += ("timsort",)
 
     groupnames = distributions
     groupsize = len(algos)

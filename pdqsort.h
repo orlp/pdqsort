@@ -5,9 +5,11 @@
 #include <algorithm>
 
 #if __cplusplus >= 201103L
-    #define PREFER_MOVE(x) std::move(x)
+    #define PDQSORT_PREFER_MOVE(x) std::move(x)
+    #define PDQSORT_USE_MOVE 1
 #else
-    #define PREFER_MOVE(x) (x)
+    #define PDQSORT_PREFER_MOVE(x) (x)
+    #define PDQSORT_USE_MOVE 0
 #endif
 
 
@@ -43,12 +45,12 @@ namespace pdqsort_detail {
 
             // Compare first so we can elimite 2 moves for an element already positioned correctly.
             if (comp(*sift, *sift_1)) {
-                T tmp = PREFER_MOVE(*cur);
+                T tmp = PDQSORT_PREFER_MOVE(*cur);
 
-                do { *sift-- = PREFER_MOVE(*sift_1--); }
+                do { *sift-- = PDQSORT_PREFER_MOVE(*sift_1--); }
                 while (sift != begin && comp(tmp, *sift_1));
 
-                *sift = PREFER_MOVE(tmp);
+                *sift = PDQSORT_PREFER_MOVE(tmp);
             }
         }
     }
@@ -66,39 +68,40 @@ namespace pdqsort_detail {
 
             // Compare first so we can elimite 2 moves for an element already positioned correctly.
             if (comp(*sift, *sift_1)) {
-                T tmp = PREFER_MOVE(*cur);
+                T tmp = PDQSORT_PREFER_MOVE(*cur);
 
-                do { *sift-- = PREFER_MOVE(*sift_1--); }
+                do { *sift-- = PDQSORT_PREFER_MOVE(*sift_1--); }
                 while (comp(tmp, *sift_1));
 
-                *sift = PREFER_MOVE(tmp);
+                *sift = PDQSORT_PREFER_MOVE(tmp);
             }
         }
     }
 
     // Attempts to use insertion sort on [begin, end). Will return false if more than
-    // partial_insertion_sort_limit elements were out of place, and abort sorting. Otherwise
-    // it will succesfully sort and return true.
+    // partial_insertion_sort_limit elements were moved, and abort sorting. Otherwise it will
+    // succesfully sort and return true. Assumes begin != end.
     template<class Iter, class Compare>
     inline bool partial_insertion_sort(Iter begin, Iter end, Compare comp) {
-        if (begin == end) return true;
-
+        typedef typename std::iterator_traits<Iter>::value_type T;
         int limit = 0;
+
         for (Iter cur = begin + 1; cur != end; ++cur) {
             if (limit > partial_insertion_sort_limit) return false;
 
-            if (comp(*cur, *(cur - 1))) {
-                typename std::iterator_traits<Iter>::value_type tmp(PREFER_MOVE(*cur));
+            Iter sift = cur;
+            Iter sift_1 = cur - 1;
 
-                *cur = PREFER_MOVE(*(cur - 1));
-                Iter sift = cur - 1;
+            // Compare first so we can elimite 2 moves for an element already positioned correctly.
+            if (comp(*sift, *sift_1)) {
+                T tmp = PDQSORT_PREFER_MOVE(*cur);
 
-                while (sift != begin && comp(tmp, *(sift - 1))) {
-                    *sift = PREFER_MOVE(*(sift - 1));
-                    --sift; ++limit;
-                }
+                do {
+                    *sift-- = PDQSORT_PREFER_MOVE(*sift_1--);
+                    ++limit;
+                } while (sift != begin && comp(tmp, *sift_1));
 
-                *sift = PREFER_MOVE(tmp);
+                *sift = PDQSORT_PREFER_MOVE(tmp);
             }
         }
 
@@ -136,7 +139,7 @@ namespace pdqsort_detail {
         typedef typename std::iterator_traits<Iter>::value_type T;
         
         // Move pivot into local for speed.
-        T pivot(PREFER_MOVE(*begin));
+        T pivot(PDQSORT_PREFER_MOVE(*begin));
 
         Iter first = begin;
         Iter last = end;
@@ -146,9 +149,9 @@ namespace pdqsort_detail {
         while (comp(*++first, pivot));
 
         // Find the first element strictly smaller than the pivot. We have to guard this search if
-        // there was no element before *first because we moved the pivot to a local variable.
-        if (first - 1 == begin) while (first < last && !comp(*--last, pivot));
-        else                    while (                !comp(*--last, pivot));
+        // there was no element before *first and we moved the pivot to a local variable.
+        if (PDQSORT_USE_MOVE && first - 1 == begin) while (first < last && !comp(*--last, pivot));
+        else                                        while (                !comp(*--last, pivot));
 
         // If the first pair of elements that should be swapped to partition are the same element,
         // the passed in sequence already was correctly partitioned.
@@ -165,8 +168,8 @@ namespace pdqsort_detail {
 
         // Put the pivot in the right place.
         Iter pivot_pos = first - 1;
-        *begin = PREFER_MOVE(*pivot_pos);
-        *pivot_pos = PREFER_MOVE(pivot);
+        *begin = PDQSORT_PREFER_MOVE(*pivot_pos);
+        *pivot_pos = PDQSORT_PREFER_MOVE(pivot);
 
         return std::make_pair(pivot_pos, already_partitioned);
     }
@@ -177,14 +180,14 @@ namespace pdqsort_detail {
     inline Iter partition_left(Iter begin, Iter end, Compare comp) {
         typedef typename std::iterator_traits<Iter>::value_type T;
 
-        T pivot(PREFER_MOVE(*begin));
+        T pivot(PDQSORT_PREFER_MOVE(*begin));
         Iter first = begin;
         Iter last = end;
         
         while (comp(pivot, *--last));
 
-        if (last + 1 == end) while (first < last && !comp(pivot, *++first));
-        else                 while (                !comp(pivot, *++first));
+        if (PDQSORT_USE_MOVE && last + 1 == end) while (first < last && !comp(pivot, *++first));
+        else                                     while (                !comp(pivot, *++first));
 
         while (first < last) {
             swap(*first, *last);
@@ -193,8 +196,8 @@ namespace pdqsort_detail {
         }
 
         Iter pivot_pos = last;
-        *begin = PREFER_MOVE(*pivot_pos);
-        *pivot_pos = PREFER_MOVE(pivot);
+        *begin = PDQSORT_PREFER_MOVE(*pivot_pos);
+        *pivot_pos = PDQSORT_PREFER_MOVE(pivot);
 
         return pivot_pos;
     }
@@ -219,7 +222,7 @@ namespace pdqsort_detail {
             // Choose pivot as median of 3.
             sort3(begin + size / 2, begin, end - 1, comp);
 
-            // If *(begin - 1) is the end of the right partion of a previous partition operation
+            // If *(begin - 1) is the end of the right partition of a previous partition operation
             // there is no element in [*begin, end) that is smaller than *(begin - 1). Then if our
             // pivot compares equal to *(begin - 1) we change strategy, putting equal elements in
             // the left partition, greater elements in the right partition. We do not have to
@@ -289,6 +292,7 @@ inline void pdqsort(Iter begin, Iter end) {
 }
 
 
-#undef PREFER_MOVE
+#undef PDQSORT_PREFER_MOVE
+#undef PDQSORT_USE_MOVE
 
 #endif
