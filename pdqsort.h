@@ -149,9 +149,9 @@ namespace pdqsort_detail {
         while (comp(*++first, pivot));
 
         // Find the first element strictly smaller than the pivot. We have to guard this search if
-        // there was no element before *first and we moved the pivot to a local variable.
-        if (PDQSORT_USE_MOVE && first - 1 == begin) while (first < last && !comp(*--last, pivot));
-        else                                        while (                !comp(*--last, pivot));
+        // there was no element before *first.
+        if (first - 1 == begin) while (first < last && !comp(*--last, pivot));
+        else                    while (                !comp(*--last, pivot));
 
         // If the first pair of elements that should be swapped to partition are the same element,
         // the passed in sequence already was correctly partitioned.
@@ -186,8 +186,8 @@ namespace pdqsort_detail {
         
         while (comp(pivot, *--last));
 
-        if (PDQSORT_USE_MOVE && last + 1 == end) while (first < last && !comp(pivot, *++first));
-        else                                     while (                !comp(pivot, *++first));
+        if (last + 1 == end) while (first < last && !comp(pivot, *++first));
+        else                 while (                !comp(pivot, *++first));
 
         while (first < last) {
             swap(*first, *last);
