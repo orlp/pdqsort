@@ -56,12 +56,13 @@ percentile or over 87,5% percentile - the partition is highly unbalanced. When t
 shuffle four elements at fixed locations for both partitions. This effectively breaks up many
 patterns. If we encounter more than log(n) bad partitions we will switch to heapsort.
 
-The 1/8th percentile is not chosen arbitrarily. An upper bound of Quicksorts worst case runtime can
+The 1/8th percentile is not chosen arbitrarily. An upper bound of quicksorts worst case runtime can
 be approximated within a constant factor by the following recurrence:
 
-    T(n, p) = n + T(pn, p) + T((1-p)n, p)
+    T(n, p) = n + T(p(n-1), p) + T((1-p)(n-1), p)
 
-Where n is the number of elements, and p is the percentile of the pivot after partitioning. T(n,
-1/2) is the best case for quicksort. On modern systems heapsort is profiled to be approximately 1.8
-times as slow as quicksort on average. The average case of quicksort is ~1.39 times as slow as the
-best case through analysis. So if we can find a p such that T(n, 1/2) / T(n, p) = 1.8*1.39 
+Where n is the number of elements, and p is the percentile of the pivot after partitioning.
+`T(n, 1/2)` is the best case for quicksort. On modern systems heapsort is profiled to be
+approximately 1.8 to 2 times as slow as quicksort. Choosing p such that `T(n, 1/2) / T(n, p) ~= 1.9`
+will ensure that we will only switch to heapsort if it likely speeds up the sorting. p = 1/8 is a
+reasonably close value and is cheap to compute on every platform using a bitshift. 
