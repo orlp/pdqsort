@@ -6,10 +6,8 @@
 
 #if __cplusplus >= 201103L
     #define PDQSORT_PREFER_MOVE(x) std::move(x)
-    #define PDQSORT_USE_MOVE 1
 #else
     #define PDQSORT_PREFER_MOVE(x) (x)
-    #define PDQSORT_USE_MOVE 0
 #endif
 
 
@@ -135,7 +133,7 @@ namespace pdqsort_detail {
     // pivot is a median of at least 3 elements and that [begin, end) is at least
     // insertion_sort_threshold long.
     template<class Iter, class Compare>
-    inline std::pair<Iter, bool> partition_right(Iter begin, Iter end, Compare comp) {
+    inline st::pair<Iter, bool> partition_right(Iter begin, Iter end, Compare comp) {
         typedef typename std::iterator_traits<Iter>::value_type T;
         
         // Move pivot into local for speed.
@@ -293,6 +291,5 @@ inline void pdqsort(Iter begin, Iter end) {
 
 
 #undef PDQSORT_PREFER_MOVE
-#undef PDQSORT_USE_MOVE
 
 #endif
