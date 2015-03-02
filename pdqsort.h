@@ -133,7 +133,7 @@ namespace pdqsort_detail {
     // pivot is a median of at least 3 elements and that [begin, end) is at least
     // insertion_sort_threshold long.
     template<class Iter, class Compare>
-    inline st::pair<Iter, bool> partition_right(Iter begin, Iter end, Compare comp) {
+    inline std::pair<Iter, bool> partition_right(Iter begin, Iter end, Compare comp) {
         typedef typename std::iterator_traits<Iter>::value_type T;
         
         // Move pivot into local for speed.
