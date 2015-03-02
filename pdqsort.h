@@ -202,12 +202,12 @@ namespace pdqsort_detail {
 
 
     template<class Iter, class Compare>
-    inline void pdqsort_loop(Iter begin, Iter end, Compare comp, int depth, bool leftmost = true) {
+    inline void pdqsort_loop(Iter begin, Iter end, Compare comp, int bad_allowed, bool leftmost = true) {
         typedef typename std::iterator_traits<Iter>::value_type T;
         typedef typename std::iterator_traits<Iter>::difference_type diff_t;
 
         // Use a while loop for tail recursion elimination.
-        while (depth) {
+        while (true) {
             diff_t size = end - begin;
 
             // Insertion sort is faster for small arrays.
@@ -239,10 +239,14 @@ namespace pdqsort_detail {
             diff_t pivot_offset = pivot_pos - begin;
             bool highly_unbalanced = pivot_offset < size / 8 || pivot_offset > (size - size / 8);
 
-            // If we got a highly unbalanced partition we reduce the counter that determines the
-            // maximum depth. Then we also shuffle some elements to break many patterns.
+            // If we got a highly unbalanced partition we shuffle elements to break many patterns.
             if (highly_unbalanced) {
-                --depth;
+                // If we had too many bad partitions, switch to heapsort to guarantee O(n log n).
+                if (--bad_allowed == 0) {
+                    std::make_heap(begin, end, comp);
+                    std::sort_heap(begin, end, comp);
+                    return;
+                }
 
                 diff_t partition_size = pivot_pos - begin;
                 if (partition_size >= insertion_sort_threshold) {
@@ -264,14 +268,10 @@ namespace pdqsort_detail {
                 
             // Sort the left partition first using recursion and do tail recursion elimination for
             // the right-hand partition.
-            pdqsort_loop(begin, pivot_pos, comp, depth, leftmost);
+            pdqsort_loop(begin, pivot_pos, comp, bad_allowed, leftmost);
             begin = pivot_pos + 1;
             leftmost = false;
         }
-
-        // We had too many bad partitions, sort the rest using heapsort to guarantee O(n log n).
-        std::make_heap(begin, end, comp);
-        std::sort_heap(begin, end, comp);
     }
 }
 
