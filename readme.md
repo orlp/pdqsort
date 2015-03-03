@@ -23,13 +23,15 @@ guaranteed O(n log n) heapsort if the recursion depth becomes too big. In pdqsor
 approach, (deterministically) shuffling some elements to break up patterns when we encounter a "bad"
 partition (explained later). If we encounter too many "bad" partitions we switch to heapsort.
 
+
 ## The average case.
 
 pdqsort in the average case is indistinguishable from a properly implemented quicksort. On average
-case data where no patterns are detected pdqsort is effectively a quicksort that uses a median-of-3
+case data where no patterns are detected pdqsort is effectively a quicksort that uses median-of-3
 pivot selection, switching to insertion sort if the number of elements to be (recursively) sorted is
 small. The overhead associated with detecting the patterns for the best case is so small it lies
 within the error of measurement.
+
 
 ## The best case.
 
@@ -64,5 +66,5 @@ be approximated within a constant factor by the following recurrence:
 Where n is the number of elements, and p is the percentile of the pivot after partitioning.
 `T(n, 1/2)` is the best case for quicksort. On modern systems heapsort is profiled to be
 approximately 1.8 to 2 times as slow as quicksort. Choosing p such that `T(n, 1/2) / T(n, p) ~= 1.9`
-will ensure that we will only switch to heapsort if it likely speeds up the sorting. p = 1/8 is a
+will ensure that we will only switch to heapsort if it would speed up the sorting. p = 1/8 is a
 reasonably close value and is cheap to compute on every platform using a bitshift. 

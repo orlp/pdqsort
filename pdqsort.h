@@ -19,7 +19,7 @@ namespace pdqsort_detail {
         insertion_sort_threshold = 24,
 
         // When we detect an already sorted partition, attempt an insertion sort that allows this
-        // amount of elements to be out of place before giving up.
+        // amount of element moves before giving up.
         partial_insertion_sort_limit = 8
     };
 
