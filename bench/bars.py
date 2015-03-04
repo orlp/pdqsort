@@ -48,6 +48,7 @@ for filename in os.listdir("profiles"):
     colors = ["#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78"]
     for i, algo in enumerate(algos):
         heights = [numpy.median(numpy.array(data[size][distribution][algo])) for distribution in distributions]
+        errors = [numpy.std(numpy.array(data[size][distribution][algo])) for distribution in distributions]
         plt.barh([barwidth*i + groupwidth*n for n in range(len(distributions))],
                  heights, 0.6, color = colors[i], label = algo)
 

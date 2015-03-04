@@ -9,8 +9,15 @@ All code is available for free under the zlib license.
     Best        Average     Worst       Memory      Stable      Deterministic
     n           n log n     n log n     log n       No          Yes
 
+## Benchmark
 
-### The best case.
+A comparison of introsort (gcc std::sort at time of writing), heapsort (gcc std::sort_heap), pdqsort
+and timsort:
+
+![Performance graph](http://i.imgur.com/Mhm5FKy.png)
+
+
+### The best case
 
 pdqsort is designed to run in linear time for a couple of best-case patterns. Linear time is
 achieved for inputs that are in strictly ascending or descending order, only contain equal elements,
@@ -28,7 +35,7 @@ insertion sort. This insertion sort aborts if more than a constant amount of mov
 sort.
 
 
-### The average case.
+### The average case
 
 pdqsort in the average case is indistinguishable from a properly implemented quicksort. On average
 case data where no patterns are detected pdqsort is effectively a quicksort that uses median-of-3
@@ -37,7 +44,7 @@ small. The overhead associated with detecting the patterns for the best case is 
 within the error of measurement.
 
 
-### The worst case.
+### The worst case
 
 Quicksort naturally performs bad on inputs that form patterns, due to it being a partition-based
 sort. Choosing a bad pivot will result in many comparisons that give little to no progress in the
@@ -52,7 +59,7 @@ approach, (deterministically) shuffling some elements to break up patterns when 
 partition. If we encounter too many "bad" partitions we switch to heapsort.
 
 
-### Bad partitions.
+### Bad partitions
 
 A bad partition occurs when the position of the pivot after partitioning is under 12.5% (1/8th)
 percentile or over 87,5% percentile - the partition is highly unbalanced. When this happens we will
