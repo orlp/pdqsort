@@ -29,7 +29,8 @@ mechanisms at play to achieve this.
 For equal elements a smart partitioning scheme is used that always puts equal elements in the
 partition containing elements greater than the pivot. When a new pivot is chosen it's compared to
 the greatest element in the partition before it. If they compare equal we can derive that there are
-no elements smaller than the chosen pivot, and can filter them out all at once.
+no elements smaller than the chosen pivot. When this happens we switch strategy for this partition,
+and filter out all elements equal to the pivot.
 
 To get linear time for the other patterns we check after every partition if any swaps were made. If
 no swaps were made and the partition was decently balanced we will optimistically attempt to use
