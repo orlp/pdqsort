@@ -12,7 +12,7 @@ All code is available for free under the zlib license.
 ### Benchmark
 
 A comparison of introsort (gcc `std::sort` at time of writing), heapsort (gcc `std::sort_heap`),
-pdqsort and timsort:
+pdqsort and timsort with various input distributions:
 
 ![Performance graph](http://i.imgur.com/Mhm5FKy.png)
 
