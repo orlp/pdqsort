@@ -91,21 +91,21 @@ int main(int argc, char** argv) {
     typedef void (*SortF)(std::vector<int>::iterator, std::vector<int>::iterator, std::less<int>);
 
     std::pair<std::string, DistrF> distributions[] = {
-        std::make_pair("shuffled_int", shuffled_int),
-        std::make_pair("shuffled_16_values_int", shuffled_16_values_int),
-        std::make_pair("all_equal_int", all_equal_int),
-        std::make_pair("ascending_int", ascending_int),
-        std::make_pair("descending_int", descending_int),
-        std::make_pair("pipe_organ_int", pipe_organ_int),
-        std::make_pair("push_front_int", push_front_int),
-        std::make_pair("push_middle_int", push_middle_int)
+        {"shuffled_int", shuffled_int},
+        {"shuffled_16_values_int", shuffled_16_values_int},
+        {"all_equal_int", all_equal_int},
+        {"ascending_int", ascending_int},
+        {"descending_int", descending_int},
+        {"pipe_organ_int", pipe_organ_int},
+        {"push_front_int", push_front_int},
+        {"push_middle_int", push_middle_int}
     };
 
     std::pair<std::string, SortF> sorts[] = {
-        std::make_pair("heapsort", heapsort<std::vector<int>::iterator, std::less<int>>),
-        std::make_pair("introsort", std::sort<std::vector<int>::iterator, std::less<int>>),
-        std::make_pair("pdqsort", pdqsort<std::vector<int>::iterator, std::less<int>>),
-        std::make_pair("timsort", gfx::timsort<std::vector<int>::iterator, std::less<int>>)
+        {"heapsort", &heapsort<std::vector<int>::iterator, std::less<int>>},
+        {"introsort", &std::sort<std::vector<int>::iterator, std::less<int>>},
+        {"pdqsort", &pdqsort<std::vector<int>::iterator, std::less<int>>},
+        {"timsort", &gfx::timsort<std::vector<int>::iterator, std::less<int>>}
     };
 
     int sizes[] = {1000000};
