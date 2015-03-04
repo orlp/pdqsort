@@ -9,7 +9,7 @@ All code is available for free under the zlib license.
     Best        Average     Worst       Memory      Stable      Deterministic
     n           n log n     n log n     log n       No          Yes
 
-## Benchmark
+### Benchmark
 
 A comparison of introsort (gcc `std::sort` at time of writing), heapsort (gcc `std::sort_heap`),
 pdqsort and timsort:
