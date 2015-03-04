@@ -29,7 +29,8 @@ for filename in os.listdir("profiles"):
         data[size][distribution][algo] = results
 
     size = 10**6
-    distributions = ("Shuffled", "Shuffled (16 values)", "All equal", "Ascending", "Descending", "Pipe organ", "Push front", "Push middle")
+    distributions = ("Shuffled", "Shuffled (16 values)", "All equal", "Ascending", "Descending",
+                     "Pipe organ", "Push front", "Push middle")
 
     algos = ("heapsort", "introsort", "pdqsort")
     if "timsort" in data[size]["Shuffled"]: algos += ("timsort",)
@@ -41,14 +42,10 @@ for filename in os.listdir("profiles"):
     spacing = 1
     groupwidth = groupsize * barwidth + spacing
 
-    # colors = ["r", "g", "b", "y"]
-    #  for i, group in enumerate(groups):
-        # plt.boxplot(group, positions=[.75 + (0.5 + groupsize)*i + n for n in range(groupsize)], widths=0.6)
-
     colors = ["#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78"]
     for i, algo in enumerate(algos):
-        heights = [numpy.median(numpy.array(data[size][distribution][algo])) for distribution in distributions]
-        errors = [numpy.std(numpy.array(data[size][distribution][algo])) for distribution in distributions]
+        heights = [numpy.median(data[size][distribution][algo]) for distribution in distributions]
+        errors = [numpy.std(data[size][distribution][algo]) for distribution in distributions]
         plt.barh([barwidth*i + groupwidth*n for n in range(len(distributions))],
                  heights, 0.6, color = colors[i], label = algo)
 
