@@ -10,30 +10,6 @@ All code is available for free under the zlib license.
     n           n log n     n log n     log n       No          Yes
 
 
-### The worst case.
-
-Quicksort naturally performs bad on inputs that form patterns, due to it being a partition-based
-sort. Choosing a bad pivot will result in many comparisons that give little to no progress in the
-sorting process. If the pattern does not get broken up, this can happen many times in a row. Worse,
-real world data is filled with these patterns.
-
-Traditionally the solution to this is to randomize the pivot selection of quicksort. While this
-technically still allows for a quadratic worst case, the chances of it happening are astronomically
-small. Later, in introsort, pivot selection is kept deterministic, instead switching to the
-guaranteed O(n log n) heapsort if the recursion depth becomes too big. In pdqsort we adopt a hybrid
-approach, (deterministically) shuffling some elements to break up patterns when we encounter a "bad"
-partition (explained later). If we encounter too many "bad" partitions we switch to heapsort.
-
-
-### The average case.
-
-pdqsort in the average case is indistinguishable from a properly implemented quicksort. On average
-case data where no patterns are detected pdqsort is effectively a quicksort that uses median-of-3
-pivot selection, switching to insertion sort if the number of elements to be (recursively) sorted is
-small. The overhead associated with detecting the patterns for the best case is so small it lies
-within the error of measurement.
-
-
 ### The best case.
 
 pdqsort is designed to run in linear time for a couple of best-case patterns. Linear time is
@@ -50,6 +26,30 @@ To get linear time for the other patterns we check after every partition if any 
 no swaps were made and the partition was decently balanced we will optimistically attempt to use
 insertion sort. This insertion sort aborts if more than a constant amount of moves are required to
 sort.
+
+
+### The average case.
+
+pdqsort in the average case is indistinguishable from a properly implemented quicksort. On average
+case data where no patterns are detected pdqsort is effectively a quicksort that uses median-of-3
+pivot selection, switching to insertion sort if the number of elements to be (recursively) sorted is
+small. The overhead associated with detecting the patterns for the best case is so small it lies
+within the error of measurement.
+
+
+### The worst case.
+
+Quicksort naturally performs bad on inputs that form patterns, due to it being a partition-based
+sort. Choosing a bad pivot will result in many comparisons that give little to no progress in the
+sorting process. If the pattern does not get broken up, this can happen many times in a row. Worse,
+real world data is filled with these patterns.
+
+Traditionally the solution to this is to randomize the pivot selection of quicksort. While this
+technically still allows for a quadratic worst case, the chances of it happening are astronomically
+small. Later, in introsort, pivot selection is kept deterministic, instead switching to the
+guaranteed O(n log n) heapsort if the recursion depth becomes too big. In pdqsort we adopt a hybrid
+approach, (deterministically) shuffling some elements to break up patterns when we encounter a "bad"
+partition (explained later). If we encounter too many "bad" partitions we switch to heapsort.
 
 
 ### Bad partitions.
