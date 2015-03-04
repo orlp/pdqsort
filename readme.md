@@ -9,7 +9,7 @@ inputs with certain patterns. pdqsort is an extension and improvement of David M
     n           n log n     n log n     log n       No          Yes
 
 
-## The worst case.
+### The worst case.
 
 Quicksort naturally performs bad on inputs that form patterns, due to it being a partition-based
 sort. Choosing a bad pivot will result in many comparisons that give little to no progress in the
@@ -24,7 +24,7 @@ approach, (deterministically) shuffling some elements to break up patterns when 
 partition (explained later). If we encounter too many "bad" partitions we switch to heapsort.
 
 
-## The average case.
+### The average case.
 
 pdqsort in the average case is indistinguishable from a properly implemented quicksort. On average
 case data where no patterns are detected pdqsort is effectively a quicksort that uses median-of-3
@@ -33,7 +33,7 @@ small. The overhead associated with detecting the patterns for the best case is 
 within the error of measurement.
 
 
-## The best case.
+### The best case.
 
 pdqsort is designed to run in linear time for a couple of best-case patterns. Linear time is
 achieved for inputs that are in strictly ascending or descending order, only contain equal elements,
