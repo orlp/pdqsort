@@ -4,6 +4,7 @@ pdqsort
 Pattern-defeating quicksort (pdqsort) is a novel sorting algorithm that combines the fast average
 case of randomized quicksort with the fast worst case of heapsort, while achieving linear time on
 inputs with certain patterns. pdqsort is an extension and improvement of David Mussers introsort.
+All code is available for free under the zlib license.
 
     Best        Average     Worst       Memory      Stable      Deterministic
     n           n log n     n log n     log n       No          Yes
