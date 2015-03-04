@@ -49,7 +49,7 @@ technically still allows for a quadratic worst case, the chances of it happening
 small. Later, in introsort, pivot selection is kept deterministic, instead switching to the
 guaranteed O(n log n) heapsort if the recursion depth becomes too big. In pdqsort we adopt a hybrid
 approach, (deterministically) shuffling some elements to break up patterns when we encounter a "bad"
-partition (explained later). If we encounter too many "bad" partitions we switch to heapsort.
+partition. If we encounter too many "bad" partitions we switch to heapsort.
 
 
 ### Bad partitions.
@@ -67,5 +67,5 @@ be approximated within a constant factor by the following recurrence:
 Where n is the number of elements, and p is the percentile of the pivot after partitioning.
 `T(n, 1/2)` is the best case for quicksort. On modern systems heapsort is profiled to be
 approximately 1.8 to 2 times as slow as quicksort. Choosing p such that `T(n, 1/2) / T(n, p) ~= 1.9`
-will ensure that we will only switch to heapsort if it would speed up the sorting. p = 1/8 is a
-reasonably close value and is cheap to compute on every platform using a bitshift. 
+as n gets big will ensure that we will only switch to heapsort if it would speed up the sorting.
+p = 1/8 is a reasonably close value and is cheap to compute on every platform using a bitshift. 
