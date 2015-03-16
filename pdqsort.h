@@ -99,12 +99,13 @@ namespace pdqsort_detail {
 
     // Attempts to use insertion sort on [begin, end). Will return false if more than
     // partial_insertion_sort_limit elements were moved, and abort sorting. Otherwise it will
-    // succesfully sort and return true. Assumes begin != end.
+    // succesfully sort and return true.
     template<class Iter, class Compare>
     inline bool partial_insertion_sort(Iter begin, Iter end, Compare comp) {
         typedef typename std::iterator_traits<Iter>::value_type T;
+        if (begin == end) return true;
+        
         int limit = 0;
-
         for (Iter cur = begin + 1; cur != end; ++cur) {
             if (limit > partial_insertion_sort_limit) return false;
 
