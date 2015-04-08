@@ -24,6 +24,7 @@
 
 #include <utility>
 #include <algorithm>
+#include <functional>
 
 #if __cplusplus >= 201103L
     #define PDQSORT_PREFER_MOVE(x) std::move(x)
