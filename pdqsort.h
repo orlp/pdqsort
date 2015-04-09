@@ -34,8 +34,6 @@
 
 
 namespace pdqsort_detail {
-    using std::swap;
-
     enum {
         // Partitions below this size are sorted using insertion sort.
         insertion_sort_threshold = 24,
@@ -135,19 +133,19 @@ namespace pdqsort_detail {
         if (!comp(*b, *a)) {
             if (!comp(*c, *b)) return;
 
-            swap(*b, *c);
-            if (comp(*b, *a)) swap(*a, *b);
+            std::iter_swap(b, c);
+            if (comp(*b, *a)) std::iter_swap(a, b);
 
             return;
         }
 
         if (comp(*c, *b)) {
-            swap(*a, *c);
+            std::iter_swap(a, c);
             return;
         }
 
-        swap(*a, *b);
-        if (comp(*c, *b)) swap(*b, *c);
+        std::iter_swap(a, b);
+        if (comp(*c, *b)) std::iter_swap(b, c);
     }
 
     // Partitions [begin, end) around pivot *begin using comparison function comp. Elements equal
@@ -182,7 +180,7 @@ namespace pdqsort_detail {
         // swapped pairs guard the searches, which is why the first iteration is special-cased
         // above.
         while (first < last) {
-            swap(*first, *last);
+            std::iter_swap(first, last);
             while (comp(*++first, pivot));
             while (!comp(*--last, pivot));
         }
@@ -211,7 +209,7 @@ namespace pdqsort_detail {
         else                 while (                !comp(pivot, *++first));
 
         while (first < last) {
-            swap(*first, *last);
+            std::iter_swap(first, last);
             while (comp(pivot, *--last));
             while (!comp(pivot, *++first));
         }
@@ -273,14 +271,14 @@ namespace pdqsort_detail {
 
                 diff_t partition_size = pivot_pos - begin;
                 if (partition_size >= insertion_sort_threshold) {
-                    swap(*begin, *(begin + partition_size / 4));
-                    swap(*(pivot_pos - 1), *(pivot_pos - partition_size / 4));
+                    std::iter_swap(begin, begin + partition_size / 4);
+                    std::iter_swap(pivot_pos - 1, pivot_pos - partition_size / 4);
                 }
                 
                 partition_size = end - pivot_pos;
                 if (partition_size >= insertion_sort_threshold) {
-                    swap(*(pivot_pos + 1), *(pivot_pos + partition_size / 4));
-                    swap(*(end - 1), *(end - partition_size / 4));
+                    std::iter_swap(pivot_pos + 1, pivot_pos + partition_size / 4);
+                    std::iter_swap(end - 1, end - partition_size / 4);
                 }
             } else {
                 // If we were decently balanced and we tried to sort an already partitioned
