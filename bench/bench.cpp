@@ -14,8 +14,23 @@
 
 #ifdef _WIN32
     #include <intrin.h>
+    #define rdtsc __rdtsc
 #else
-    #include <x86intrin.h>
+    #ifdef __i386__
+        static __inline__ unsigned long long rdtsc() {
+            unsigned long long int x;
+            __asm__ volatile(".byte 0x0f, 0x31" : "=A" (x));
+            return x;
+        }
+    #elif defined(__x86_64__)
+        static __inline__ unsigned long long rdtsc(){
+            unsigned hi, lo;
+            __asm__ __volatile__("rdtsc" : "=a"(lo), "=d"(hi));
+            return ((unsigned long long) lo) | (((unsigned long long) hi) << 32);
+        }
+    #else
+        #error no rdtsc implementation
+    #endif
 #endif
 
 
@@ -122,9 +137,9 @@ int main(int argc, char** argv) {
                 total_end = std::chrono::high_resolution_clock::now();
                 while (std::chrono::duration_cast<std::chrono::milliseconds>(total_end - total_start).count() < 10000) {
                     std::vector<int> v = distribution.second(size, el);
-                    uint64_t start = __rdtsc();
+                    uint64_t start = rdtsc();
                     sort.second(v.begin(), v.end(), std::less<int>());
-                    uint64_t end = __rdtsc();
+                    uint64_t end = rdtsc();
                     cycles.push_back(double(end - start) / size + 0.5);
                     total_end = std::chrono::high_resolution_clock::now();
                 }
