@@ -26,12 +26,6 @@
 #include <algorithm>
 #include <functional>
 
-#if __cplusplus >= 201103L
-    #define PDQSORT_PREFER_MOVE(x) std::move(x)
-#else
-    #define PDQSORT_PREFER_MOVE(x) (x)
-#endif
-
 
 namespace pdqsort_detail {
     enum {
@@ -42,14 +36,6 @@ namespace pdqsort_detail {
         // amount of element moves before giving up.
         partial_insertion_sort_limit = 8
     };
-
-    // Returns floor(log2(n)), assumes n > 0.
-    template<class T>
-    inline int log2(T n) {
-        int log = 0;
-        while (n >>= 1) ++log;
-        return log;
-    }
 
     // Sorts [begin, end) using insertion sort with the given comparison function.
     template<class Iter, class Compare>
@@ -63,12 +49,12 @@ namespace pdqsort_detail {
 
             // Compare first so we can elimite 2 moves for an element already positioned correctly.
             if (comp(*sift, *sift_1)) {
-                T tmp = PDQSORT_PREFER_MOVE(*cur);
+                T tmp = _GLIBCXX_MOVE(*cur);
 
-                do { *sift-- = PDQSORT_PREFER_MOVE(*sift_1--); }
+                do { *sift-- = _GLIBCXX_MOVE(*sift_1--); }
                 while (sift != begin && comp(tmp, *sift_1));
 
-                *sift = PDQSORT_PREFER_MOVE(tmp);
+                *sift = _GLIBCXX_MOVE(tmp);
             }
         }
     }
@@ -86,12 +72,12 @@ namespace pdqsort_detail {
 
             // Compare first so we can elimite 2 moves for an element already positioned correctly.
             if (comp(*sift, *sift_1)) {
-                T tmp = PDQSORT_PREFER_MOVE(*cur);
+                T tmp = _GLIBCXX_MOVE(*cur);
 
-                do { *sift-- = PDQSORT_PREFER_MOVE(*sift_1--); }
+                do { *sift-- = _GLIBCXX_MOVE(*sift_1--); }
                 while (comp(tmp, *sift_1));
 
-                *sift = PDQSORT_PREFER_MOVE(tmp);
+                *sift = _GLIBCXX_MOVE(tmp);
             }
         }
     }
@@ -113,14 +99,14 @@ namespace pdqsort_detail {
 
             // Compare first so we can elimite 2 moves for an element already positioned correctly.
             if (comp(*sift, *sift_1)) {
-                T tmp = PDQSORT_PREFER_MOVE(*cur);
+                T tmp = _GLIBCXX_MOVE(*cur);
 
                 do {
-                    *sift-- = PDQSORT_PREFER_MOVE(*sift_1--);
+                    *sift-- = _GLIBCXX_MOVE(*sift_1--);
                     ++limit;
                 } while (sift != begin && comp(tmp, *sift_1));
 
-                *sift = PDQSORT_PREFER_MOVE(tmp);
+                *sift = _GLIBCXX_MOVE(tmp);
             }
         }
 
@@ -158,7 +144,7 @@ namespace pdqsort_detail {
         typedef typename std::iterator_traits<Iter>::value_type T;
         
         // Move pivot into local for speed.
-        T pivot(PDQSORT_PREFER_MOVE(*begin));
+        T pivot(_GLIBCXX_MOVE(*begin));
 
         Iter first = begin;
         Iter last = end;
@@ -187,8 +173,8 @@ namespace pdqsort_detail {
 
         // Put the pivot in the right place.
         Iter pivot_pos = first - 1;
-        *begin = PDQSORT_PREFER_MOVE(*pivot_pos);
-        *pivot_pos = PDQSORT_PREFER_MOVE(pivot);
+        *begin = _GLIBCXX_MOVE(*pivot_pos);
+        *pivot_pos = _GLIBCXX_MOVE(pivot);
 
         return std::make_pair(pivot_pos, already_partitioned);
     }
@@ -199,7 +185,7 @@ namespace pdqsort_detail {
     inline Iter partition_left(Iter begin, Iter end, Compare comp) {
         typedef typename std::iterator_traits<Iter>::value_type T;
 
-        T pivot(PDQSORT_PREFER_MOVE(*begin));
+        T pivot(_GLIBCXX_MOVE(*begin));
         Iter first = begin;
         Iter last = end;
         
@@ -215,8 +201,8 @@ namespace pdqsort_detail {
         }
 
         Iter pivot_pos = last;
-        *begin = PDQSORT_PREFER_MOVE(*pivot_pos);
-        *pivot_pos = PDQSORT_PREFER_MOVE(pivot);
+        *begin = _GLIBCXX_MOVE(*pivot_pos);
+        *pivot_pos = _GLIBCXX_MOVE(pivot);
 
         return pivot_pos;
     }
@@ -300,7 +286,7 @@ namespace pdqsort_detail {
 template<class Iter, class Compare>
 inline void pdqsort(Iter begin, Iter end, Compare comp) {
     if (begin == end) return;
-    pdqsort_detail::pdqsort_loop(begin, end, comp, pdqsort_detail::log2(end - begin));
+    pdqsort_detail::pdqsort_loop(begin, end, comp, std::__lg(end - begin));
 }
 
 
@@ -310,7 +296,5 @@ inline void pdqsort(Iter begin, Iter end) {
     pdqsort(begin, end, std::less<T>());
 }
 
-
-#undef PDQSORT_PREFER_MOVE
 
 #endif
