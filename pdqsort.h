@@ -32,7 +32,7 @@
 enum {
     // When we detect an already sorted partition, attempt an insertion sort that allows this
     // amount of element moves before giving up.
-    __partial_insertion_sort_limit = 8
+    _S_partial_insertion_sort = 8
 };
 
 // Sorts [__begin, __end) using insertion sort with the given comparison function.
@@ -81,7 +81,7 @@ inline void __pdq_unguarded_insertion_sort(_Iter __begin, _Iter __end, _Compare 
 }
 
 // Attempts to use insertion sort on [__begin, __end). Will return false if more than
-// __partial_insertion_sort_limit elements were moved, and abort sorting. Otherwise it will
+// _S_partial_insertion_sort elements were moved, and abort sorting. Otherwise it will
 // succesfully sort and return true.
 template<typename _Iter, typename _Compare>
 inline bool __partial_insertion_sort(_Iter __begin, _Iter __end, _Compare __comp) {
@@ -90,7 +90,7 @@ inline bool __partial_insertion_sort(_Iter __begin, _Iter __end, _Compare __comp
     
     int __limit = 0;
     for (_Iter __cur = __begin + 1; __cur != __end; ++__cur) {
-        if (__limit > __partial_insertion_sort_limit) return false;
+        if (__limit > _S_partial_insertion_sort) return false;
 
         _Iter __sift = __cur;
         _Iter __sift_1 = __cur - 1;
@@ -136,7 +136,7 @@ inline void __sort3(_Iter a, _Iter b, _Iter c, _Compare __comp) {
 // to the pivot are put in the right-hand partition. Returns the position of the pivot after
 // partitioning and whether the passed sequence already was correctly partitioned. Assumes the
 // pivot is a median of at least 3 elements and that [__begin, __end) is at least
-// __insertion_sort_threshold long.
+// _S_insertion_sort long.
 template<typename _Iter, typename _Compare>
 inline std::pair<_Iter, bool> __partition_right(_Iter __begin, _Iter __end, _Compare __comp) {
     typedef typename std::iterator_traits<_Iter>::value_type _ValT;
@@ -210,14 +210,14 @@ template<typename _Iter, typename _Compare>
 inline void __pdqsort_loop(_Iter __begin, _Iter __end, _Compare __comp, int __bad_allowed, bool __leftmost = true) {
     typedef typename std::iterator_traits<_Iter>::difference_type _ValT;
     typedef typename std::iterator_traits<_Iter>::difference_type _DiffT;
-    const _DiffT __insertion_sort_threshold = 16 + 8*__is_pod(_ValT);
+    const _DiffT _S_insertion_sort = 16 + 8*__is_pod(_ValT);
 
     // Use a while loop for tail recursion elimination.
     while (true) {
         _DiffT __size = __end - __begin;
 
         // Insertion sort is faster for small arrays.
-        if (__size < __insertion_sort_threshold) {
+        if (__size < _S_insertion_sort) {
             if (__leftmost) __pdq_insertion_sort(__begin, __end, __comp);
             else __pdq_unguarded_insertion_sort(__begin, __end, __comp);
             return;
@@ -255,13 +255,13 @@ inline void __pdqsort_loop(_Iter __begin, _Iter __end, _Compare __comp, int __ba
             }
 
             _DiffT __partition_size = __pivot_pos - __begin;
-            if (__partition_size >= __insertion_sort_threshold) {
+            if (__partition_size >= _S_insertion_sort) {
                 std::iter_swap(__begin, __begin + __partition_size / 4);
                 std::iter_swap(__pivot_pos - 1, __pivot_pos - __partition_size / 4);
             }
             
             __partition_size = __end - __pivot_pos;
-            if (__partition_size >= __insertion_sort_threshold) {
+            if (__partition_size >= _S_insertion_sort) {
                 std::iter_swap(__pivot_pos + 1, __pivot_pos + __partition_size / 4);
                 std::iter_swap(__end - 1, __end - __partition_size / 4);
             }
