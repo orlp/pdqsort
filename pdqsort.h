@@ -32,274 +32,273 @@
 namespace pdqsort_detail {
     enum {
         // Partitions below this size are sorted using insertion sort.
-        insertion_sort_threshold = 24,
+        __insertion_sort_threshold = 24,
 
         // When we detect an already sorted partition, attempt an insertion sort that allows this
         // amount of element moves before giving up.
-        partial_insertion_sort_limit = 8
+        __partial_insertion_sort_limit = 8
     };
 
-    // Sorts [begin, end) using insertion sort with the given comparison function.
-    template<class Iter, class Compare>
-    inline void insertion_sort(Iter begin, Iter end, Compare comp) {
-        typedef typename std::iterator_traits<Iter>::value_type T;
-        if (begin == end) return;
+    // Sorts [__begin, __end) using insertion sort with the given comparison function.
+    template<class _Iter, class _Compare>
+    inline void __pdq_insertion_sort(_Iter __begin, _Iter __end, _Compare __comp) {
+        typedef typename std::iterator_traits<_Iter>::value_type _ValT;
+        if (__begin == __end) return;
 
-        for (Iter cur = begin + 1; cur != end; ++cur) {
-            Iter sift = cur;
-            Iter sift_1 = cur - 1;
+        for (_Iter __cur = __begin + 1; __cur != __end; ++__cur) {
+            _Iter __sift = __cur;
+            _Iter __sift_1 = __cur - 1;
 
             // Compare first so we can elimite 2 moves for an element already positioned correctly.
-            if (comp(sift, sift_1)) {
-                T tmp = _GLIBCXX_MOVE(*cur);
+            if (__comp(__sift, __sift_1)) {
+                _ValT __tmp = _GLIBCXX_MOVE(*__cur);
 
-                do { *sift-- = _GLIBCXX_MOVE(*sift_1--); }
-                while (sift != begin && __gnu_cxx::__ops::__val_comp_iter(comp)(tmp, sift_1));
+                do { *__sift-- = _GLIBCXX_MOVE(*__sift_1--); }
+                while (__sift != __begin && __gnu_cxx::__ops::__val_comp_iter(__comp)(__tmp, __sift_1));
 
-                *sift = _GLIBCXX_MOVE(tmp);
+                *__sift = _GLIBCXX_MOVE(__tmp);
             }
         }
     }
 
-    // Sorts [begin, end) using insertion sort with the given comparison function. Assumes
-    // *(begin - 1) is an element smaller than or equal to any element in [begin, end).
-    template<class Iter, class Compare>
-    inline void unguarded_insertion_sort(Iter begin, Iter end, Compare comp) {
-        typedef typename std::iterator_traits<Iter>::value_type T;
-        if (begin == end) return;
+    // Sorts [__begin, __end) using insertion sort with the given comparison function. Assumes
+    // *(__begin - 1) is an element smaller than or equal to any element in [__begin, __end).
+    template<class _Iter, class _Compare>
+    inline void __pdq_unguarded_insertion_sort(_Iter __begin, _Iter __end, _Compare __comp) {
+        typedef typename std::iterator_traits<_Iter>::value_type _ValT;
+        if (__begin == __end) return;
 
-        for (Iter cur = begin + 1; cur != end; ++cur) {
-            Iter sift = cur;
-            Iter sift_1 = cur - 1;
+        for (_Iter __cur = __begin + 1; __cur != __end; ++__cur) {
+            _Iter __sift = __cur;
+            _Iter __sift_1 = __cur - 1;
 
             // Compare first so we can elimite 2 moves for an element already positioned correctly.
-            if (comp(sift, sift_1)) {
-                T tmp = _GLIBCXX_MOVE(*cur);
+            if (__comp(__sift, __sift_1)) {
+                _ValT __tmp = _GLIBCXX_MOVE(*__cur);
 
-                do { *sift-- = _GLIBCXX_MOVE(*sift_1--); }
-                while (__gnu_cxx::__ops::__val_comp_iter(comp)(tmp, sift_1));
+                do { *__sift-- = _GLIBCXX_MOVE(*__sift_1--); }
+                while (__gnu_cxx::__ops::__val_comp_iter(__comp)(__tmp, __sift_1));
 
-                *sift = _GLIBCXX_MOVE(tmp);
+                *__sift = _GLIBCXX_MOVE(__tmp);
             }
         }
     }
 
-    // Attempts to use insertion sort on [begin, end). Will return false if more than
-    // partial_insertion_sort_limit elements were moved, and abort sorting. Otherwise it will
+    // Attempts to use insertion sort on [__begin, __end). Will return false if more than
+    // __partial_insertion_sort_limit elements were moved, and abort sorting. Otherwise it will
     // succesfully sort and return true.
-    template<class Iter, class Compare>
-    inline bool partial_insertion_sort(Iter begin, Iter end, Compare comp) {
-        typedef typename std::iterator_traits<Iter>::value_type T;
-        if (begin == end) return true;
+    template<class _Iter, class _Compare>
+    inline bool __partial_insertion_sort(_Iter __begin, _Iter __end, _Compare __comp) {
+        typedef typename std::iterator_traits<_Iter>::value_type _ValT;
+        if (__begin == __end) return true;
         
-        int limit = 0;
-        for (Iter cur = begin + 1; cur != end; ++cur) {
-            if (limit > partial_insertion_sort_limit) return false;
+        int __limit = 0;
+        for (_Iter __cur = __begin + 1; __cur != __end; ++__cur) {
+            if (__limit > __partial_insertion_sort_limit) return false;
 
-            Iter sift = cur;
-            Iter sift_1 = cur - 1;
+            _Iter __sift = __cur;
+            _Iter __sift_1 = __cur - 1;
 
             // Compare first so we can elimite 2 moves for an element already positioned correctly.
-            if (comp(sift, sift_1)) {
-                T tmp = _GLIBCXX_MOVE(*cur);
+            if (__comp(__sift, __sift_1)) {
+                _ValT __tmp = _GLIBCXX_MOVE(*__cur);
 
                 do {
-                    *sift-- = _GLIBCXX_MOVE(*sift_1--);
-                    ++limit;
-                } while (sift != begin && __gnu_cxx::__ops::__val_comp_iter(comp)(tmp, sift_1));
+                    *__sift-- = _GLIBCXX_MOVE(*__sift_1--);
+                    ++__limit;
+                } while (__sift != __begin && __gnu_cxx::__ops::__val_comp_iter(__comp)(__tmp, __sift_1));
 
-                *sift = _GLIBCXX_MOVE(tmp);
+                *__sift = _GLIBCXX_MOVE(__tmp);
             }
         }
 
         return true;
     }
 
-    // Sorts the elements *a, *b and *c using comparison function comp.
-    template<class Iter, class Compare>
-    inline void sort3(Iter a, Iter b, Iter c, Compare comp) {
-        if (!comp(b, a)) {
-            if (!comp(c, b)) return;
+    // Sorts the elements *a, *b and *c using comparison function __comp.
+    template<class _Iter, class _Compare>
+    inline void __sort3(_Iter a, _Iter b, _Iter c, _Compare __comp) {
+        if (!__comp(b, a)) {
+            if (!__comp(c, b)) return;
 
             std::iter_swap(b, c);
-            if (comp(b, a)) std::iter_swap(a, b);
+            if (__comp(b, a)) std::iter_swap(a, b);
 
             return;
         }
 
-        if (comp(c, b)) {
+        if (__comp(c, b)) {
             std::iter_swap(a, c);
             return;
         }
 
         std::iter_swap(a, b);
-        if (comp(c, b)) std::iter_swap(b, c);
+        if (__comp(c, b)) std::iter_swap(b, c);
     }
 
-    // Partitions [begin, end) around pivot *begin using comparison function comp. Elements equal
+    // Partitions [__begin, __end) around pivot *__begin using comparison function __comp. Elements equal
     // to the pivot are put in the right-hand partition. Returns the position of the pivot after
     // partitioning and whether the passed sequence already was correctly partitioned. Assumes the
-    // pivot is a median of at least 3 elements and that [begin, end) is at least
-    // insertion_sort_threshold long.
-    template<class Iter, class Compare>
-    inline std::pair<Iter, bool> partition_right(Iter begin, Iter end, Compare comp_iter_val) {
-        typedef typename std::iterator_traits<Iter>::value_type T;
+    // pivot is a median of at least 3 elements and that [__begin, __end) is at least
+    // __insertion_sort_threshold long.
+    template<class _Iter, class _Compare>
+    inline std::pair<_Iter, bool> __partition_right(_Iter __begin, _Iter __end, _Compare __comp) {
+        typedef typename std::iterator_traits<_Iter>::value_type _ValT;
         
         // Move pivot into local for speed.
-        T pivot(_GLIBCXX_MOVE(*begin));
+        _ValT __pivot(_GLIBCXX_MOVE(*__begin));
 
-        Iter first = begin;
-        Iter last = end;
+        _Iter __first = __begin;
+        _Iter __last = __end;
 
         // Find the first element greater than or equal than the pivot (the median of 3 guarantees
         // this exists).
-        while (comp_iter_val(++first, pivot));
+        while (__comp(++__first, __pivot));
 
         // Find the first element strictly smaller than the pivot. We have to guard this search if
-        // there was no element before *first.
-        if (first - 1 == begin) while (first < last && !comp_iter_val(--last, pivot));
-        else                    while (                !comp_iter_val(--last, pivot));
+        // there was no element before *__first.
+        if (__first - 1 == __begin) while (__first < __last && !__comp(--__last, __pivot));
+        else                        while (                    !__comp(--__last, __pivot));
 
         // If the first pair of elements that should be swapped to partition are the same element,
         // the passed in sequence already was correctly partitioned.
-        bool already_partitioned = first >= last;
+        bool __already_partitioned = __first >= __last;
         
         // Keep swapping pairs of elements that are on the wrong side of the pivot. Previously
         // swapped pairs guard the searches, which is why the first iteration is special-cased
         // above.
-        while (first < last) {
-            std::iter_swap(first, last);
-            while (comp_iter_val(++first, pivot));
-            while (!comp_iter_val(--last, pivot));
+        while (__first < __last) {
+            std::iter_swap(__first, __last);
+            while (__comp(++__first, __pivot));
+            while (!__comp(--__last, __pivot));
         }
 
         // Put the pivot in the right place.
-        Iter pivot_pos = first - 1;
-        *begin = _GLIBCXX_MOVE(*pivot_pos);
-        *pivot_pos = _GLIBCXX_MOVE(pivot);
+        _Iter __pivot_pos = __first - 1;
+        *__begin = _GLIBCXX_MOVE(*__pivot_pos);
+        *__pivot_pos = _GLIBCXX_MOVE(__pivot);
 
-        return std::make_pair(pivot_pos, already_partitioned);
+        return std::make_pair(__pivot_pos, __already_partitioned);
     }
 
     // Similar function to the one above, except elements equal to the pivot are put to the left of
     // the pivot and it doesn't check or return if the passed sequence already was partitioned.
-    template<class Iter, class Compare>
-    inline Iter partition_left(Iter begin, Iter end, Compare comp_val_iter) {
-        typedef typename std::iterator_traits<Iter>::value_type T;
+    template<class _Iter, class _Compare>
+    inline _Iter __partition_left(_Iter __begin, _Iter __end, _Compare __comp) {
+        typedef typename std::iterator_traits<_Iter>::value_type _ValT;
 
-        T pivot(_GLIBCXX_MOVE(*begin));
-        Iter first = begin;
-        Iter last = end;
+        _ValT __pivot(_GLIBCXX_MOVE(*__begin));
+        _Iter __first = __begin;
+        _Iter __last = __end;
         
-        while (comp_val_iter(pivot, --last));
+        while (__comp(__pivot, --__last));
 
-        if (last + 1 == end) while (first < last && !comp_val_iter(pivot, ++first));
-        else                 while (                !comp_val_iter(pivot, ++first));
+        if (__last + 1 == __end) while (__first < __last && !__comp(__pivot, ++__first));
+        else                     while (                    !__comp(__pivot, ++__first));
 
-        while (first < last) {
-            std::iter_swap(first, last);
-            while (comp_val_iter(pivot, --last));
-            while (!comp_val_iter(pivot, ++first));
+        while (__first < __last) {
+            std::iter_swap(__first, __last);
+            while (__comp(__pivot, --__last));
+            while (!__comp(__pivot, ++__first));
         }
 
-        Iter pivot_pos = last;
-        *begin = _GLIBCXX_MOVE(*pivot_pos);
-        *pivot_pos = _GLIBCXX_MOVE(pivot);
+        _Iter __pivot_pos = __last;
+        *__begin = _GLIBCXX_MOVE(*__pivot_pos);
+        *__pivot_pos = _GLIBCXX_MOVE(__pivot);
 
-        return pivot_pos;
+        return __pivot_pos;
     }
 
 
-    template<class Iter, class Compare>
-    inline void pdqsort_loop(Iter begin, Iter end, Compare comp, int bad_allowed, bool leftmost = true) {
-        typedef typename std::iterator_traits<Iter>::value_type T;
-        typedef typename std::iterator_traits<Iter>::difference_type diff_t;
+    template<class _Iter, class _Compare>
+    inline void __pdqsort_loop(_Iter __begin, _Iter __end, _Compare __comp, int __bad_allowed, bool __leftmost = true) {
+        typedef typename std::iterator_traits<_Iter>::difference_type _diff_t;
 
         // Use a while loop for tail recursion elimination.
         while (true) {
-            diff_t size = end - begin;
+            _diff_t __size = __end - __begin;
 
             // Insertion sort is faster for small arrays.
-            if (size < insertion_sort_threshold) {
-                if (leftmost) insertion_sort(begin, end, comp);
-                else unguarded_insertion_sort(begin, end, comp);
+            if (__size < __insertion_sort_threshold) {
+                if (__leftmost) __pdq_insertion_sort(__begin, __end, __comp);
+                else __pdq_unguarded_insertion_sort(__begin, __end, __comp);
                 return;
             }
 
             // Choose pivot as median of 3.
-            sort3(begin + size / 2, begin, end - 1, comp);
+            __sort3(__begin + __size / 2, __begin, __end - 1, __comp);
 
-            // If *(begin - 1) is the end of the right partition of a previous partition operation
-            // there is no element in [*begin, end) that is smaller than *(begin - 1). Then if our
-            // pivot compares equal to *(begin - 1) we change strategy, putting equal elements in
+            // If *(__begin - 1) is the end of the right partition of a previous partition operation
+            // there is no element in [*__begin, __end) that is smaller than *(__begin - 1). Then if our
+            // pivot compares equal to *(__begin - 1) we change strategy, putting equal elements in
             // the left partition, greater elements in the right partition. We do not have to
             // recurse on the left partition, since it's sorted (all equal).
-            if (!leftmost && !comp(begin - 1, begin)) {
-                begin = partition_left(begin, end, __gnu_cxx::__ops::__val_comp_iter(comp)) + 1;
+            if (!__leftmost && !__comp(__begin - 1, __begin)) {
+                __begin = __partition_left(__begin, __end, __gnu_cxx::__ops::__val_comp_iter(__comp)) + 1;
                 continue;
             }
 
             // Partition and get results.
-            std::pair<Iter, bool> part_result = partition_right(begin, end, __gnu_cxx::__ops::__iter_comp_val(comp));
-            Iter pivot_pos = part_result.first;
-            bool already_partitioned = part_result.second;
+            std::pair<_Iter, bool> __part_result = __partition_right(__begin, __end, __gnu_cxx::__ops::__iter_comp_val(__comp));
+            _Iter __pivot_pos = __part_result.first;
+            bool __already_partitioned = __part_result.second;
 
             // Check for a highly unbalanced partition.
-            diff_t pivot_offset = pivot_pos - begin;
-            bool highly_unbalanced = pivot_offset < size / 8 || pivot_offset > (size - size / 8);
+            _diff_t __pivot_offset = __pivot_pos - __begin;
+            bool __highly_unbalanced = __pivot_offset < __size / 8 || __pivot_offset > (__size - __size / 8);
 
             // If we got a highly unbalanced partition we shuffle elements to break many patterns.
-            if (highly_unbalanced) {
+            if (__highly_unbalanced) {
                 // If we had too many bad partitions, switch to heapsort to guarantee O(n log n).
-                if (--bad_allowed == 0) {
-                    std::__make_heap(begin, end, comp);
-                    std::__sort_heap(begin, end, comp);
+                if (--__bad_allowed == 0) {
+                    std::__make_heap(__begin, __end, __comp);
+                    std::__sort_heap(__begin, __end, __comp);
                     return;
                 }
 
-                diff_t partition_size = pivot_pos - begin;
-                if (partition_size >= insertion_sort_threshold) {
-                    std::iter_swap(begin, begin + partition_size / 4);
-                    std::iter_swap(pivot_pos - 1, pivot_pos - partition_size / 4);
+                _diff_t __partition_size = __pivot_pos - __begin;
+                if (__partition_size >= __insertion_sort_threshold) {
+                    std::iter_swap(__begin, __begin + __partition_size / 4);
+                    std::iter_swap(__pivot_pos - 1, __pivot_pos - __partition_size / 4);
                 }
                 
-                partition_size = end - pivot_pos;
-                if (partition_size >= insertion_sort_threshold) {
-                    std::iter_swap(pivot_pos + 1, pivot_pos + partition_size / 4);
-                    std::iter_swap(end - 1, end - partition_size / 4);
+                __partition_size = __end - __pivot_pos;
+                if (__partition_size >= __insertion_sort_threshold) {
+                    std::iter_swap(__pivot_pos + 1, __pivot_pos + __partition_size / 4);
+                    std::iter_swap(__end - 1, __end - __partition_size / 4);
                 }
             } else {
                 // If we were decently balanced and we tried to sort an already partitioned
                 // sequence try to use insertion sort.
-                if (already_partitioned && partial_insertion_sort(begin, pivot_pos, comp)
-                                        && partial_insertion_sort(pivot_pos + 1, end, comp)) return;
+                if (__already_partitioned && __partial_insertion_sort(__begin, __pivot_pos, __comp)
+                                          && __partial_insertion_sort(__pivot_pos + 1, __end, __comp)) return;
             }
                 
             // Sort the left partition first using recursion and do tail recursion elimination for
             // the right-hand partition.
-            pdqsort_loop(begin, pivot_pos, comp, bad_allowed, leftmost);
-            begin = pivot_pos + 1;
-            leftmost = false;
+            __pdqsort_loop(__begin, __pivot_pos, __comp, __bad_allowed, __leftmost);
+            __begin = __pivot_pos + 1;
+            __leftmost = false;
         }
     }
 }
 
 
-template<class Iter, class Compare>
-inline void pdqsort(Iter begin, Iter end, Compare comp) {
-    if (begin == end) return;
-    pdqsort_detail::pdqsort_loop(begin, end,
-                                 __gnu_cxx::__ops::__iter_comp_iter(comp),
-                                 std::__lg(end - begin));
+template<class _Iter, class _Compare>
+inline void pdqsort(_Iter __begin, _Iter __end, _Compare __comp) {
+    if (__begin == __end) return;
+    pdqsort_detail::__pdqsort_loop(__begin, __end,
+                                 __gnu_cxx::__ops::__iter_comp_iter(__comp),
+                                 std::__lg(__end - __begin));
 }
 
 
-template<class Iter>
-inline void pdqsort(Iter begin, Iter end) {
-    if (begin == end) return;
-    pdqsort_detail::pdqsort_loop(begin, end,
+template<class _Iter>
+inline void pdqsort(_Iter __begin, _Iter __end) {
+    if (__begin == __end) return;
+    pdqsort_detail::__pdqsort_loop(__begin, __end,
                                  __gnu_cxx::__ops::__iter_less_iter(),
-                                 std::__lg(end - begin));
+                                 std::__lg(__end - __begin));
 }
 
 
