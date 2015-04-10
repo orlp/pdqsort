@@ -30,9 +30,6 @@
 
 
 enum {
-    // Partitions below this size are sorted using insertion sort.
-    __insertion_sort_threshold = 24,
-
     // When we detect an already sorted partition, attempt an insertion sort that allows this
     // amount of element moves before giving up.
     __partial_insertion_sort_limit = 8
@@ -211,11 +208,13 @@ inline _Iter __partition_left(_Iter __begin, _Iter __end, _Compare __comp) {
 
 template<typename _Iter, typename _Compare>
 inline void __pdqsort_loop(_Iter __begin, _Iter __end, _Compare __comp, int __bad_allowed, bool __leftmost = true) {
-    typedef typename std::iterator_traits<_Iter>::difference_type _diff_t;
+    typedef typename std::iterator_traits<_Iter>::difference_type _ValT;
+    typedef typename std::iterator_traits<_Iter>::difference_type _DiffT;
+    const _DiffT __insertion_sort_threshold = 16 + 8*__is_pod(_ValT);
 
     // Use a while loop for tail recursion elimination.
     while (true) {
-        _diff_t __size = __end - __begin;
+        _DiffT __size = __end - __begin;
 
         // Insertion sort is faster for small arrays.
         if (__size < __insertion_sort_threshold) {
@@ -243,7 +242,7 @@ inline void __pdqsort_loop(_Iter __begin, _Iter __end, _Compare __comp, int __ba
         bool __already_partitioned = __part_result.second;
 
         // Check for a highly unbalanced partition.
-        _diff_t __pivot_offset = __pivot_pos - __begin;
+        _DiffT __pivot_offset = __pivot_pos - __begin;
         bool __highly_unbalanced = __pivot_offset < __size / 8 || __pivot_offset > (__size - __size / 8);
 
         // If we got a highly unbalanced partition we shuffle elements to break many patterns.
@@ -255,7 +254,7 @@ inline void __pdqsort_loop(_Iter __begin, _Iter __end, _Compare __comp, int __ba
                 return;
             }
 
-            _diff_t __partition_size = __pivot_pos - __begin;
+            _DiffT __partition_size = __pivot_pos - __begin;
             if (__partition_size >= __insertion_sort_threshold) {
                 std::iter_swap(__begin, __begin + __partition_size / 4);
                 std::iter_swap(__pivot_pos - 1, __pivot_pos - __partition_size / 4);
