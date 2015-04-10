@@ -40,9 +40,8 @@ namespace pdqsort_detail {
     };
 
     // Sorts [begin, end) using insertion sort with the given comparison function.
-    template<class Iter, class Compare1, class Compare2>
-    inline void insertion_sort(Iter begin, Iter end,
-                               Compare1 comp_iter_iter, Compare2 comp_val_iter) {
+    template<class Iter, class Compare>
+    inline void insertion_sort(Iter begin, Iter end, Compare comp) {
         typedef typename std::iterator_traits<Iter>::value_type T;
         if (begin == end) return;
 
@@ -51,11 +50,11 @@ namespace pdqsort_detail {
             Iter sift_1 = cur - 1;
 
             // Compare first so we can elimite 2 moves for an element already positioned correctly.
-            if (comp_iter_iter(sift, sift_1)) {
+            if (comp(sift, sift_1)) {
                 T tmp = _GLIBCXX_MOVE(*cur);
 
                 do { *sift-- = _GLIBCXX_MOVE(*sift_1--); }
-                while (sift != begin && comp_val_iter(tmp, sift_1));
+                while (sift != begin && __gnu_cxx::__ops::__val_comp_iter(comp)(tmp, sift_1));
 
                 *sift = _GLIBCXX_MOVE(tmp);
             }
@@ -64,9 +63,8 @@ namespace pdqsort_detail {
 
     // Sorts [begin, end) using insertion sort with the given comparison function. Assumes
     // *(begin - 1) is an element smaller than or equal to any element in [begin, end).
-    template<class Iter, class Compare1, class Compare2>
-    inline void unguarded_insertion_sort(Iter begin, Iter end,
-                                         Compare1 comp_iter_iter, Compare2 comp_val_iter) {
+    template<class Iter, class Compare>
+    inline void unguarded_insertion_sort(Iter begin, Iter end, Compare comp) {
         typedef typename std::iterator_traits<Iter>::value_type T;
         if (begin == end) return;
 
@@ -75,11 +73,11 @@ namespace pdqsort_detail {
             Iter sift_1 = cur - 1;
 
             // Compare first so we can elimite 2 moves for an element already positioned correctly.
-            if (comp_iter_iter(sift, sift_1)) {
+            if (comp(sift, sift_1)) {
                 T tmp = _GLIBCXX_MOVE(*cur);
 
                 do { *sift-- = _GLIBCXX_MOVE(*sift_1--); }
-                while (comp_val_iter(tmp, sift_1));
+                while (__gnu_cxx::__ops::__val_comp_iter(comp)(tmp, sift_1));
 
                 *sift = _GLIBCXX_MOVE(tmp);
             }
@@ -89,9 +87,8 @@ namespace pdqsort_detail {
     // Attempts to use insertion sort on [begin, end). Will return false if more than
     // partial_insertion_sort_limit elements were moved, and abort sorting. Otherwise it will
     // succesfully sort and return true.
-    template<class Iter, class Compare1, class Compare2>
-    inline bool partial_insertion_sort(Iter begin, Iter end,
-                                       Compare1 comp_iter_iter, Compare2 comp_val_iter) {
+    template<class Iter, class Compare>
+    inline bool partial_insertion_sort(Iter begin, Iter end, Compare comp) {
         typedef typename std::iterator_traits<Iter>::value_type T;
         if (begin == end) return true;
         
@@ -103,13 +100,13 @@ namespace pdqsort_detail {
             Iter sift_1 = cur - 1;
 
             // Compare first so we can elimite 2 moves for an element already positioned correctly.
-            if (comp_iter_iter(sift, sift_1)) {
+            if (comp(sift, sift_1)) {
                 T tmp = _GLIBCXX_MOVE(*cur);
 
                 do {
                     *sift-- = _GLIBCXX_MOVE(*sift_1--);
                     ++limit;
-                } while (sift != begin && comp_val_iter(tmp, sift_1));
+                } while (sift != begin && __gnu_cxx::__ops::__val_comp_iter(comp)(tmp, sift_1));
 
                 *sift = _GLIBCXX_MOVE(tmp);
             }
@@ -224,8 +221,8 @@ namespace pdqsort_detail {
 
             // Insertion sort is faster for small arrays.
             if (size < insertion_sort_threshold) {
-                if (leftmost) insertion_sort(begin, end, comp, __gnu_cxx::__ops::__val_comp_iter(comp));
-                else unguarded_insertion_sort(begin, end, comp, __gnu_cxx::__ops::__val_comp_iter(comp));
+                if (leftmost) insertion_sort(begin, end, comp);
+                else unguarded_insertion_sort(begin, end, comp);
                 return;
             }
 
@@ -274,8 +271,8 @@ namespace pdqsort_detail {
             } else {
                 // If we were decently balanced and we tried to sort an already partitioned
                 // sequence try to use insertion sort.
-                if (already_partitioned && partial_insertion_sort(begin, pivot_pos, comp, __gnu_cxx::__ops::__val_comp_iter(comp))
-                                        && partial_insertion_sort(pivot_pos + 1, end, comp, __gnu_cxx::__ops::__val_comp_iter(comp))) return;
+                if (already_partitioned && partial_insertion_sort(begin, pivot_pos, comp)
+                                        && partial_insertion_sort(pivot_pos + 1, end, comp)) return;
             }
                 
             // Sort the left partition first using recursion and do tail recursion elimination for
