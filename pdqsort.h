@@ -50,7 +50,7 @@ inline void __pdq_insertion_sort(_Iter __begin, _Iter __end, _Compare __comp) {
             _ValT __tmp = _GLIBCXX_MOVE(*__cur);
 
             do { *__sift-- = _GLIBCXX_MOVE(*__sift_1--); }
-            while (__sift != __begin && __comp(std::addressof(__tmp), __sift_1));
+            while (__sift != __begin && __comp(std::__addressof(__tmp), __sift_1));
 
             *__sift = _GLIBCXX_MOVE(__tmp);
         }
@@ -73,7 +73,7 @@ inline void __pdq_unguarded_insertion_sort(_Iter __begin, _Iter __end, _Compare 
             _ValT __tmp = _GLIBCXX_MOVE(*__cur);
 
             do { *__sift-- = _GLIBCXX_MOVE(*__sift_1--); }
-            while (__comp(std::addressof(__tmp), __sift_1));
+            while (__comp(std::__addressof(__tmp), __sift_1));
 
             *__sift = _GLIBCXX_MOVE(__tmp);
         }
@@ -102,7 +102,7 @@ inline bool __partial_insertion_sort(_Iter __begin, _Iter __end, _Compare __comp
             do {
                 *__sift-- = _GLIBCXX_MOVE(*__sift_1--);
                 ++__limit;
-            } while (__sift != __begin && __comp(std::addressof(__tmp), __sift_1));
+            } while (__sift != __begin && __comp(std::__addressof(__tmp), __sift_1));
 
             *__sift = _GLIBCXX_MOVE(__tmp);
         }
@@ -149,12 +149,12 @@ inline std::pair<_Iter, bool> __partition_right(_Iter __begin, _Iter __end, _Com
 
     // Find the first element greater than or equal than the pivot (the median of 3 guarantees
     // this exists).
-    while (__comp(++__first, std::addressof(__pivot)));
+    while (__comp(++__first, std::__addressof(__pivot)));
 
     // Find the first element strictly smaller than the pivot. We have to guard this search if
     // there was no element before *__first.
-    if (__first - 1 == __begin) while (__first < __last && !__comp(--__last, std::addressof(__pivot)));
-    else                        while (                    !__comp(--__last, std::addressof(__pivot)));
+    if (__first - 1 == __begin) while (__first < __last && !__comp(--__last, std::__addressof(__pivot)));
+    else                        while (                    !__comp(--__last, std::__addressof(__pivot)));
 
     // If the first pair of elements that should be swapped to partition are the same element,
     // the passed in sequence already was correctly partitioned.
@@ -165,8 +165,8 @@ inline std::pair<_Iter, bool> __partition_right(_Iter __begin, _Iter __end, _Com
     // above.
     while (__first < __last) {
         std::iter_swap(__first, __last);
-        while (__comp(++__first, std::addressof(__pivot)));
-        while (!__comp(--__last, std::addressof(__pivot)));
+        while (__comp(++__first, std::__addressof(__pivot)));
+        while (!__comp(--__last, std::__addressof(__pivot)));
     }
 
     // Put the pivot in the right place.
@@ -187,15 +187,15 @@ inline _Iter __partition_left(_Iter __begin, _Iter __end, _Compare __comp) {
     _Iter __first = __begin;
     _Iter __last = __end;
     
-    while (__comp(std::addressof(__pivot), --__last));
+    while (__comp(std::__addressof(__pivot), --__last));
 
-    if (__last + 1 == __end) while (__first < __last && !__comp(std::addressof(__pivot), ++__first));
-    else                     while (                    !__comp(std::addressof(__pivot), ++__first));
+    if (__last + 1 == __end) while (__first < __last && !__comp(std::__addressof(__pivot), ++__first));
+    else                     while (                    !__comp(std::__addressof(__pivot), ++__first));
 
     while (__first < __last) {
         std::iter_swap(__first, __last);
-        while (__comp(std::addressof(__pivot), --__last));
-        while (!__comp(std::addressof(__pivot), ++__first));
+        while (__comp(std::__addressof(__pivot), --__last));
+        while (!__comp(std::__addressof(__pivot), ++__first));
     }
 
     _Iter __pivot_pos = __last;
