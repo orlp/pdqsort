@@ -6,23 +6,26 @@ namespace std
 
   // Sorts [__begin, __end) using insertion sort with the given comparison
   // function.
-  template<typename _Iter, typename _Compare>
+  template<typename _RandomAccessIterator, typename _Compare>
     inline void
-    __pdq_insertion_sort(_Iter __begin, _Iter __end, _Compare __comp)
+    __pdq_insertion_sort(_RandomAccessIterator __begin,
+			 _RandomAccessIterator __end,
+			 _Compare __comp)
     {
-      typedef typename std::iterator_traits<_Iter>::value_type _ValT;
+      typedef typename std::iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
       if (__begin == __end) return;
 
-      for (_Iter __cur = __begin + 1; __cur != __end; ++__cur)
+      for (_RandomAccessIterator __cur = __begin + 1; __cur != __end; ++__cur)
 	{
-	  _Iter __sift = __cur;
-	  _Iter __sift_1 = __cur - 1;
+	  _RandomAccessIterator __sift = __cur;
+	  _RandomAccessIterator __sift_1 = __cur - 1;
 
 	  // Compare first so we can elimite 2 moves for an element already
 	  // positioned correctly.
 	  if (__comp(__sift, __sift_1))
 	    {
-	      _ValT __tmp = _GLIBCXX_MOVE(*__sift);
+	      _ValueType __tmp = _GLIBCXX_MOVE(*__sift);
 
 	      do { *__sift-- = _GLIBCXX_MOVE(*__sift_1); }
 	      while (__sift != __begin &&
@@ -36,23 +39,26 @@ namespace std
   // Sorts [__begin, __end) using insertion sort with the given comparison
   // function. Assumes *(__begin - 1) is an element smaller than or equal to
   // any element in [__begin, __end).
-  template<typename _Iter, typename _Compare>
+  template<typename _RandomAccessIterator, typename _Compare>
     inline void
-    __pdq_unguarded_insertion_sort(_Iter __begin, _Iter __end, _Compare __comp)
+    __pdq_unguarded_insertion_sort(_RandomAccessIterator __begin,
+				   _RandomAccessIterator __end,
+				   _Compare __comp)
     {
-      typedef typename std::iterator_traits<_Iter>::value_type _ValT;
+      typedef typename std::iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
       if (__begin == __end) return;
 
-      for (_Iter __cur = __begin + 1; __cur != __end; ++__cur)
+      for (_RandomAccessIterator __cur = __begin + 1; __cur != __end; ++__cur)
 	{
-	  _Iter __sift = __cur;
-	  _Iter __sift_1 = __cur - 1;
+	  _RandomAccessIterator __sift = __cur;
+	  _RandomAccessIterator __sift_1 = __cur - 1;
 
 	  // Compare first so we can elimite 2 moves for an element already
 	  // positioned correctly.
 	  if (__comp(__sift, __sift_1))
 	    {
-	      _ValT __tmp = _GLIBCXX_MOVE(*__sift);
+	      _ValueType __tmp = _GLIBCXX_MOVE(*__sift);
 
 	      do { *__sift-- = _GLIBCXX_MOVE(*__sift_1); }
 	      while (__comp(std::__addressof(__tmp), --__sift_1));
@@ -65,26 +71,29 @@ namespace std
   // Attempts to use insertion sort on [__begin, __end). Will return false if
   // more than _S_partial_insertion_sort elements were moved, and abort
   // sorting. Otherwise it will succesfully sort and return true.
-  template<typename _Iter, typename _Compare>
+  template<typename _RandomAccessIterator, typename _Compare>
     inline bool
-    __partial_insertion_sort(_Iter __begin, _Iter __end, _Compare __comp)
+    __partial_insertion_sort(_RandomAccessIterator __begin,
+			     _RandomAccessIterator __end,
+			     _Compare __comp)
     {
-      typedef typename std::iterator_traits<_Iter>::value_type _ValT;
+      typedef typename std::iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
       if (__begin == __end) return true;
       
       int __limit = 0;
-      for (_Iter __cur = __begin + 1; __cur != __end; ++__cur)
+      for (_RandomAccessIterator __cur = __begin + 1; __cur != __end; ++__cur)
 	{
 	  if (__limit > _S_partial_insertion_sort) return false;
 
-	  _Iter __sift = __cur;
-	  _Iter __sift_1 = __cur - 1;
+	  _RandomAccessIterator __sift = __cur;
+	  _RandomAccessIterator __sift_1 = __cur - 1;
 
 	  // Compare first so we can elimite 2 moves for an element already
 	  // positioned correctly.
 	  if (__comp(__sift, __sift_1))
 	    {
-	      _ValT __tmp = _GLIBCXX_MOVE(*__sift);
+	      _ValueType __tmp = _GLIBCXX_MOVE(*__sift);
 
 	      do { *__sift-- = _GLIBCXX_MOVE(*__sift_1); }
 	      while (__sift != __begin &&
@@ -99,9 +108,12 @@ namespace std
     }
 
   // Sorts the elements *a, *b and *c using comparison function __comp.
-  template<typename _Iter, typename _Compare>
+  template<typename _RandomAccessIterator, typename _Compare>
     inline void
-    __sort3(_Iter a, _Iter b, _Iter c, _Compare __comp)
+    __sort3(_RandomAccessIterator a,
+	    _RandomAccessIterator b,
+	    _RandomAccessIterator c,
+	    _Compare __comp)
     {
       if (!__comp(b, a))
 	{
@@ -129,17 +141,20 @@ namespace std
   // whether the passed sequence already was correctly partitioned. Assumes the
   // pivot is a median of at least 3 elements and that [__begin, __end) is at
   // least _S_insertion_sort long.
-  template<typename _Iter, typename _Compare>
-    inline std::pair<_Iter, bool>
-    __partition_right(_Iter __begin, _Iter __end, _Compare __comp)
+  template<typename _RandomAccessIterator, typename _Compare>
+    inline std::pair<_RandomAccessIterator, bool>
+    __partition_right(_RandomAccessIterator __begin,
+		      _RandomAccessIterator __end,
+		      _Compare __comp)
     {
-      typedef typename std::iterator_traits<_Iter>::value_type _ValT;
+      typedef typename std::iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
       
       // Move pivot into local for speed.
-      _ValT __pivot(_GLIBCXX_MOVE(*__begin));
+      _ValueType __pivot(_GLIBCXX_MOVE(*__begin));
 
-      _Iter __first = __begin;
-      _Iter __last = __end;
+      _RandomAccessIterator __first = __begin;
+      _RandomAccessIterator __last = __end;
 
       // Find the first element greater than or equal than the pivot (the
       // median of 3 guarantees this exists).
@@ -169,7 +184,7 @@ namespace std
 	}
 
       // Put the pivot in the right place.
-      _Iter __pivot_pos = __first - 1;
+      _RandomAccessIterator __pivot_pos = __first - 1;
       *__begin = _GLIBCXX_MOVE(*__pivot_pos);
       *__pivot_pos = _GLIBCXX_MOVE(__pivot);
       return std::make_pair(__pivot_pos, __already_partitioned);
@@ -178,15 +193,18 @@ namespace std
   // Similar function to the one above, except elements equal to the pivot are
   // put to the left of the pivot and it doesn't check or return if the passed
   // sequence already was partitioned.
-  template<typename _Iter, typename _Compare>
-    inline _Iter
-    __partition_left(_Iter __begin, _Iter __end, _Compare __comp)
+  template<typename _RandomAccessIterator, typename _Compare>
+    inline _RandomAccessIterator
+    __partition_left(_RandomAccessIterator __begin,
+		     _RandomAccessIterator __end,
+		     _Compare __comp)
     {
-      typedef typename std::iterator_traits<_Iter>::value_type _ValT;
+      typedef typename std::iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
 
-      _ValT __pivot(_GLIBCXX_MOVE(*__begin));
-      _Iter __first = __begin;
-      _Iter __last = __end;
+      _ValueType __pivot(_GLIBCXX_MOVE(*__begin));
+      _RandomAccessIterator __first = __begin;
+      _RandomAccessIterator __last = __end;
       
       while (__comp(std::__addressof(__pivot), --__last));
 
@@ -203,26 +221,31 @@ namespace std
 	  while (!__comp(std::__addressof(__pivot), ++__first));
 	}
 
-      _Iter __pivot_pos = __last;
+      _RandomAccessIterator __pivot_pos = __last;
       *__begin = _GLIBCXX_MOVE(*__pivot_pos);
       *__pivot_pos = _GLIBCXX_MOVE(__pivot);
       return __pivot_pos;
     }
 
 
-  template<typename _Iter, typename _Compare>
+  template<typename _RandomAccessIterator, typename _Compare>
     inline void
-    __pdqsort_loop(_Iter __begin, _Iter __end, _Compare __comp,
+    __pdqsort_loop(_RandomAccessIterator __begin,
+		   _RandomAccessIterator __end,
+		   _Compare __comp,
 		   int __bad_allowed, bool __leftmost = true)
     {
-      typedef typename std::iterator_traits<_Iter>::difference_type _ValT;
-      typedef typename std::iterator_traits<_Iter>::difference_type _DiffT;
-      const _DiffT _S_insertion_sort = 16 + 8*__is_pod(_ValT);
+      typedef typename std::iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
+      typedef
+	typename std::iterator_traits<_RandomAccessIterator>::difference_type
+	_DistanceType;
+      const _DistanceType _S_insertion_sort = 16 + 8*__is_pod(_ValueType);
 
       // Use a while loop for tail recursion elimination.
       while (true)
 	{
-	  _DiffT __size = __end - __begin;
+	  _DistanceType __size = __end - __begin;
 
 	  // Insertion sort is faster for small arrays.
 	  if (__size < _S_insertion_sort)
@@ -249,13 +272,13 @@ namespace std
 	    }
 
 	  // Partition and get results.
-	  std::pair<_Iter, bool> __part_result =
+	  std::pair<_RandomAccessIterator, bool> __part_result =
 	    __partition_right(__begin, __end, __comp);
-	  _Iter __pivot_pos = __part_result.first;
+	  _RandomAccessIterator __pivot_pos = __part_result.first;
 	  bool __already_partitioned = __part_result.second;
 
 	  // Check for a highly unbalanced partition.
-	  _DiffT __pivot_offset = __pivot_pos - __begin;
+	  _DistanceType __pivot_offset = __pivot_pos - __begin;
 	  bool __highly_unbalanced = __pivot_offset < __size / 8 ||
 				     __pivot_offset > (__size - __size / 8);
 
@@ -272,7 +295,7 @@ namespace std
 		  return;
 		}
 
-	      _DiffT __partition_size = __pivot_pos - __begin;
+	      _DistanceType __partition_size = __pivot_pos - __begin;
 	      if (__partition_size >= _S_insertion_sort)
 		{
 		  std::iter_swap(__begin,
@@ -310,9 +333,11 @@ namespace std
     }
 
 
-  template<typename _Iter, typename _Compare>
+  template<typename _RandomAccessIterator, typename _Compare>
     inline void
-    pdqsort(_Iter __begin, _Iter __end, _Compare __comp)
+    pdqsort(_RandomAccessIterator __begin,
+	    _RandomAccessIterator __end,
+	    _Compare __comp)
     {
       if (__begin == __end) return;
       __pdqsort_loop(__begin, __end,
@@ -321,9 +346,9 @@ namespace std
     }
 
 
-  template<typename _Iter>
+  template<typename _RandomAccessIterator>
     inline void
-    pdqsort(_Iter __begin, _Iter __end)
+    pdqsort(_RandomAccessIterator __begin, _RandomAccessIterator __end)
     {
       if (__begin == __end) return;
       __pdqsort_loop(__begin, __end,
