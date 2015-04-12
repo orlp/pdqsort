@@ -107,32 +107,32 @@ namespace std
       return true;
     }
 
-  // Sorts the elements *a, *b and *c using comparison function __comp.
+// Sorts the elements *__a, *__b and *__c using comparison function __comp.
   template<typename _RandomAccessIterator, typename _Compare>
     inline void
-    __sort3(_RandomAccessIterator a,
-	    _RandomAccessIterator b,
-	    _RandomAccessIterator c,
+    __sort3(_RandomAccessIterator __a,
+	    _RandomAccessIterator __b,
+	    _RandomAccessIterator __c,
 	    _Compare __comp)
     {
-      if (!__comp(b, a))
+      if (!__comp(__b, __a))
 	{
-	  if (!__comp(c, b)) return;
+	  if (!__comp(__c, __b)) return;
 
-	  std::iter_swap(b, c);
-	  if (__comp(b, a)) std::iter_swap(a, b);
+	  std::iter_swap(__b, __c);
+	  if (__comp(__b, __a)) std::iter_swap(__a, __b);
 
 	  return;
 	}
 
-      if (__comp(c, b))
+      if (__comp(__c, __b))
 	{
-	  std::iter_swap(a, c);
+	  std::iter_swap(__a, __c);
 	  return;
 	}
 
-      std::iter_swap(a, b);
-      if (__comp(c, b)) std::iter_swap(b, c);
+      std::iter_swap(__a, __b);
+      if (__comp(__c, __b)) std::iter_swap(__b, __c);
     }
 
   // Partitions [__first, __last) around pivot *__first using comparison
