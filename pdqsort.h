@@ -333,6 +333,20 @@ namespace std
     }
 
 
+  /**
+   *  @brief Sort the elements of a sequence.
+   *  @ingroup sorting_algorithms
+   *  @param  __first   An iterator.
+   *  @param  __last    Another iterator.
+   *  @return  Nothing.
+   *
+   *  Sorts the elements in the range @p [__first,__last) in ascending order,
+   *  such that for each iterator @e i in the range @p [__first,__last-1),  
+   *  *(i+1)<*i is false.
+   *
+   *  The relative ordering of equivalent elements is not preserved, use
+   *  @p stable_sort() if this is needed.
+  */
   template<typename _RandomAccessIterator>
     inline void
     pdqsort(_RandomAccessIterator __first, _RandomAccessIterator __last)
@@ -351,6 +365,21 @@ namespace std
     }
 
 
+  /**
+   *  @brief Sort the elements of a sequence using a predicate for comparison.
+   *  @ingroup sorting_algorithms
+   *  @param  __first   An iterator.
+   *  @param  __last    Another iterator.
+   *  @param  __comp    A comparison functor.
+   *  @return  Nothing.
+   *
+   *  Sorts the elements in the range @p [__first,__last) in ascending order,
+   *  such that @p __comp(*(i+1),*i) is false for every iterator @e i in the
+   *  range @p [__first,__last-1).
+   *
+   *  The relative ordering of equivalent elements is not preserved, use
+   *  @p stable_sort() if this is needed.
+  */
   template<typename _RandomAccessIterator, typename _Compare>
     inline void
     pdqsort(_RandomAccessIterator __first,
