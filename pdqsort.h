@@ -33,11 +33,9 @@
 #include <bits/predefined_ops.h>
 
 
-enum {
-  // When we detect an already sorted partition, attempt an insertion sort
-  // that allows this amount of element moves before giving up.
-  _S_partial_insertion_sort = 8
-};
+// When we detect an already sorted partition, attempt an insertion sort that
+// allows this amount of element moves before giving up.
+enum { _S_partial_insertion_sort = 8 };
 
 // Sorts [__begin, __end) using insertion sort with the given comparison
 // function.
