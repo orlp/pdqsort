@@ -99,12 +99,11 @@ inline bool __partial_insertion_sort(_Iter __begin, _Iter __end, _Compare __comp
         if (__comp(__sift, __sift_1)) {
             _ValT __tmp = _GLIBCXX_MOVE(*__sift);
 
-            do {
-                *__sift-- = _GLIBCXX_MOVE(*__sift_1);
-                ++__limit;
-            } while (__sift != __begin && __comp(std::__addressof(__tmp), --__sift_1));
+            do { *__sift-- = _GLIBCXX_MOVE(*__sift_1); }
+            while (__sift != __begin && __comp(std::__addressof(__tmp), --__sift_1));
 
             *__sift = _GLIBCXX_MOVE(__tmp);
+            __limit += __cur - __sift;
         }
     }
 
