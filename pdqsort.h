@@ -63,7 +63,7 @@ namespace pdqsort_detail {
 
             // Compare first so we can elimite 2 moves for an element already positioned correctly.
             if (comp(*sift, *sift_1)) {
-                T tmp = PDQSORT_PREFER_MOVE(*cur);
+                T tmp = PDQSORT_PREFER_MOVE(*sift);
 
                 do { *sift-- = PDQSORT_PREFER_MOVE(*sift_1); }
                 while (sift != begin && comp(tmp, *--sift_1));
@@ -86,7 +86,7 @@ namespace pdqsort_detail {
 
             // Compare first so we can elimite 2 moves for an element already positioned correctly.
             if (comp(*sift, *sift_1)) {
-                T tmp = PDQSORT_PREFER_MOVE(*cur);
+                T tmp = PDQSORT_PREFER_MOVE(*sift);
 
                 do { *sift-- = PDQSORT_PREFER_MOVE(*sift_1); }
                 while (comp(tmp, *--sift_1));
@@ -113,7 +113,7 @@ namespace pdqsort_detail {
 
             // Compare first so we can elimite 2 moves for an element already positioned correctly.
             if (comp(*sift, *sift_1)) {
-                T tmp = PDQSORT_PREFER_MOVE(*cur);
+                T tmp = PDQSORT_PREFER_MOVE(*sift);
 
                 do {
                     *sift-- = PDQSORT_PREFER_MOVE(*sift_1);
