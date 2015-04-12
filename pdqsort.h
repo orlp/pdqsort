@@ -115,12 +115,11 @@ namespace pdqsort_detail {
             if (comp(*sift, *sift_1)) {
                 T tmp = PDQSORT_PREFER_MOVE(*sift);
 
-                do {
-                    *sift-- = PDQSORT_PREFER_MOVE(*sift_1);
-                    ++limit;
-                } while (sift != begin && comp(tmp, *--sift_1));
+                do { *sift-- = PDQSORT_PREFER_MOVE(*sift_1); }
+                while (sift != begin && comp(tmp, *--sift_1));
 
                 *sift = PDQSORT_PREFER_MOVE(tmp);
+                limit += cur - sift;
             }
         }
 
