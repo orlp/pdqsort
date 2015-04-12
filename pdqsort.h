@@ -337,6 +337,13 @@ namespace std
     inline void
     pdqsort(_RandomAccessIterator __first, _RandomAccessIterator __last)
     {
+      // concept requirements
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
+	    _RandomAccessIterator>)
+      __glibcxx_function_requires(_LessThanComparableConcept<
+	    typename iterator_traits<_RandomAccessIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+
       if (__first == __last) return;
       __pdqsort_loop(__first, __last,
 		     __gnu_cxx::__ops::__iter_less_iter(),
@@ -350,6 +357,14 @@ namespace std
 	    _RandomAccessIterator __last,
 	    _Compare __comp)
     {
+      // concept requirements
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
+	    _RandomAccessIterator>)
+      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
+	    typename iterator_traits<_RandomAccessIterator>::value_type,
+	    typename iterator_traits<_RandomAccessIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+
       if (__first == __last) return;
       __pdqsort_loop(__first, __last,
 		     __gnu_cxx::__ops::__iter_comp_iter(__comp),
