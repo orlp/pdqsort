@@ -223,7 +223,6 @@ namespace pdqsort_detail {
 
     template<class Iter, class Compare>
     inline void pdqsort_loop(Iter begin, Iter end, Compare comp, int bad_allowed, bool leftmost = true) {
-        typedef typename std::iterator_traits<Iter>::value_type T;
         typedef typename std::iterator_traits<Iter>::difference_type diff_t;
 
         // Use a while loop for tail recursion elimination.
