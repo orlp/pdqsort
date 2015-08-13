@@ -54,7 +54,7 @@ namespace std
 	  _RandomAccessIterator __sift = __cur;
 	  _RandomAccessIterator __sift_1 = __cur - 1;
 
-	  // Compare first so we can elimite 2 moves for an element already
+	  // Compare first so we can avoid 2 moves for an element already
 	  // positioned correctly.
 	  if (__comp(__sift, __sift_1))
 	    {
@@ -89,7 +89,7 @@ namespace std
 	  _RandomAccessIterator __sift = __cur;
 	  _RandomAccessIterator __sift_1 = __cur - 1;
 
-	  // Compare first so we can elimite 2 moves for an element already
+	  // Compare first so we can avoid 2 moves for an element already
 	  // positioned correctly.
 	  if (__comp(__sift, __sift_1))
 	    {
