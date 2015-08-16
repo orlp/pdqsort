@@ -111,7 +111,7 @@ namespace pdqsort_detail {
             Iter sift = cur;
             Iter sift_1 = cur - 1;
 
-            // Compare first so we can elimite 2 moves for an element already positioned correctly.
+            // Compare first so we can avoid 2 moves for an element already positioned correctly.
             if (comp(*sift, *sift_1)) {
                 T tmp = PDQSORT_PREFER_MOVE(*sift);
 
