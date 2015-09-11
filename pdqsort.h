@@ -70,7 +70,7 @@ namespace std
 
   // Attempts to use insertion sort on [__first, __last). Will return false if
   // more than _S_partial_insertion_sort elements were moved, and abort sorting.
-  // Otherwise it will succesfully sort and return true.
+  // Otherwise it will successfully sort and return true.
   template<typename _RandomAccessIterator, typename _Compare>
     inline bool
     __partial_insertion_sort(_RandomAccessIterator __first,
