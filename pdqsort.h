@@ -255,8 +255,9 @@ namespace pdqsort_detail {
             bool already_partitioned = part_result.second;
 
             // Check for a highly unbalanced partition.
-            diff_t pivot_offset = pivot_pos - begin;
-            bool highly_unbalanced = pivot_offset < size / 8 || pivot_offset > (size - size / 8);
+            diff_t l_size = pivot_pos - begin;
+            diff_t r_size = end - (pivot_pos + 1);
+            bool highly_unbalanced = l_size < size / 8 || r_size < size / 8;
 
             // If we got a highly unbalanced partition we shuffle elements to break many patterns.
             if (highly_unbalanced) {
@@ -267,16 +268,14 @@ namespace pdqsort_detail {
                     return;
                 }
 
-                diff_t partition_size = pivot_pos - begin;
-                if (partition_size >= insertion_sort_threshold) {
-                    std::iter_swap(begin, begin + partition_size / 4);
-                    std::iter_swap(pivot_pos - 1, pivot_pos - partition_size / 4);
+                if (l_size >= insertion_sort_threshold) {
+                    std::iter_swap(begin,             begin + l_size / 4);
+                    std::iter_swap(pivot_pos - 1, pivot_pos - l_size / 4);
                 }
                 
-                partition_size = end - pivot_pos;
-                if (partition_size >= insertion_sort_threshold) {
-                    std::iter_swap(pivot_pos + 1, pivot_pos + partition_size / 4);
-                    std::iter_swap(end - 1, end - partition_size / 4);
+                if (r_size >= insertion_sort_threshold) {
+                    std::iter_swap(pivot_pos + 1, pivot_pos + 1 + r_size / 4);
+                    std::iter_swap(end - 1,                 end - r_size / 4);
                 }
             } else {
                 // If we were decently balanced and we tried to sort an already partitioned
