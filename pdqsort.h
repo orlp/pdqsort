@@ -240,7 +240,7 @@ namespace pdqsort_detail {
             sort3(begin + size / 2, begin, end - 1, comp);
 
             // If *(begin - 1) is the end of the right partition of a previous partition operation
-            // there is no element in [*begin, end) that is smaller than *(begin - 1). Then if our
+            // there is no element in [begin, end) that is smaller than *(begin - 1). Then if our
             // pivot compares equal to *(begin - 1) we change strategy, putting equal elements in
             // the left partition, greater elements in the right partition. We do not have to
             // recurse on the left partition, since it's sorted (all equal).
