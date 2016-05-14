@@ -259,7 +259,7 @@ namespace std
 	  __sort3(__first + __size / 2, __first, __last - 1, __comp);
 
 	  // If *(__first - 1) is the end of the right partition of a previous
-	  // partition operation there is no element in [*__first, __last) that
+	  // partition operation there is no element in [__first, __last) that
 	  // is smaller than *(__first - 1). Then if our pivot compares equal
 	  // to *(__first - 1) we change strategy, putting equal elements in
 	  // the left partition, greater elements in the right partition. We do
