@@ -278,9 +278,10 @@ namespace std
 	  bool __already_partitioned = __part_result.second;
 
 	  // Check for a highly unbalanced partition.
-	  _DistanceType __pivot_offset = __pivot_pos - __first;
-	  bool __highly_unbalanced = __pivot_offset < __size / 8 ||
-				     __pivot_offset > (__size - __size / 8);
+	  _DistanceType __l_size = __pivot_pos - __first;
+	  _DistanceType __r_size = __last - (__pivot_pos + 1);
+	  bool __highly_unbalanced = __l_size < __size / 8 ||
+				     __r_size < __size / 8;
 
 	  // If we got a highly unbalanced partition we shuffle elements to
 	  // break many patterns.
@@ -295,22 +296,20 @@ namespace std
 		  return;
 		}
 
-	      _DistanceType __partition_size = __pivot_pos - __first;
-	      if (__partition_size >= _S_insertion_sort)
+	      if (__l_size >= _S_insertion_sort)
 		{
 		  std::iter_swap(__first,
-				 __first + __partition_size / 4);
+				 __first + __l_size / 4);
 		  std::iter_swap(__pivot_pos - 1,
-				 __pivot_pos - __partition_size / 4);
+				 __pivot_pos - __l_size / 4);
 		}
 	      
-	      __partition_size = __last - __pivot_pos;
-	      if (__partition_size >= _S_insertion_sort)
+	      if (__r_size >= _S_insertion_sort)
 		{
 		  std::iter_swap(__pivot_pos + 1,
-				 __pivot_pos + __partition_size / 4);
+				 __pivot_pos + 1 + __r_size / 4);
 		  std::iter_swap(__last - 1,
-				 __last - __partition_size / 4);
+				 __last - __r_size / 4);
 		}
 	    }
 	  else
