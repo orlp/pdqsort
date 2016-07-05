@@ -40,7 +40,13 @@ namespace pdqsort_detail {
 
         // When we detect an already sorted partition, attempt an insertion sort that allows this
         // amount of element moves before giving up.
-        partial_insertion_sort_limit = 8
+        partial_insertion_sort_limit = 8,
+
+        // Must be multiple of 8 due to loop unrolling.
+        block_size = 64,
+
+        // Cacheline size, assumes power of two.
+        cacheline_size = 64
     };
 
     // Returns floor(log2(n)), assumes n > 0.
@@ -147,6 +153,13 @@ namespace pdqsort_detail {
         if (comp(*c, *b)) std::iter_swap(b, c);
     }
 
+    template<class T>
+    T* align_cacheline(T* p) {
+        std::uintptr_t ip = reinterpret_cast<std::uintptr_t>(p);
+        ip = (ip + cacheline_size - 1) & -cacheline_size;
+        return reinterpret_cast<T*>(ip);
+    }
+
     // Partitions [begin, end) around pivot *begin using comparison function comp. Elements equal
     // to the pivot are put in the right-hand partition. Returns the position of the pivot after
     // partitioning and whether the passed sequence already was correctly partitioned. Assumes the
@@ -155,10 +168,9 @@ namespace pdqsort_detail {
     template<class Iter, class Compare>
     inline std::pair<Iter, bool> partition_right(Iter begin, Iter end, Compare comp) {
         typedef typename std::iterator_traits<Iter>::value_type T;
-        
+
         // Move pivot into local for speed.
         T pivot(PDQSORT_PREFER_MOVE(*begin));
-
         Iter first = begin;
         Iter last = end;
 
@@ -174,14 +186,87 @@ namespace pdqsort_detail {
         // If the first pair of elements that should be swapped to partition are the same element,
         // the passed in sequence already was correctly partitioned.
         bool already_partitioned = first >= last;
-        
-        // Keep swapping pairs of elements that are on the wrong side of the pivot. Previously
-        // swapped pairs guard the searches, which is why the first iteration is special-cased
-        // above.
-        while (first < last) {
+        if (!already_partitioned) {
             std::iter_swap(first, last);
-            while (comp(*++first, pivot));
+            ++first;
+        }
+
+        // The following branchless partitioning is derived from "BlockQuicksort: How Branch
+        // Mispredictions don’t affect Quicksort" by Stefan Edelkamp and Armin Weiss.
+        unsigned char offsets_l_storage[block_size + cacheline_size];
+        unsigned char offsets_r_storage[block_size + cacheline_size];
+        unsigned char* offsets_l = align_cacheline(offsets_l_storage);
+        unsigned char* offsets_r = align_cacheline(offsets_r_storage);
+        int num_l, num_r, start_l, start_r;
+        num_l = num_r = start_l = start_r = 0;
+        
+        while (last - first > 2 * block_size) {
+            // Fill up offset blocks with elements that are on the wrong side.
+            if (num_l == 0) {
+                start_l = 0;
+                for (int i = 0; i < block_size; i += 8) {
+                    offsets_l[num_l] = i + 0; num_l += !comp(*(first + (i + 0)), pivot);
+                    offsets_l[num_l] = i + 1; num_l += !comp(*(first + (i + 1)), pivot);
+                    offsets_l[num_l] = i + 2; num_l += !comp(*(first + (i + 2)), pivot);
+                    offsets_l[num_l] = i + 3; num_l += !comp(*(first + (i + 3)), pivot);
+                    offsets_l[num_l] = i + 4; num_l += !comp(*(first + (i + 4)), pivot);
+                    offsets_l[num_l] = i + 5; num_l += !comp(*(first + (i + 5)), pivot);
+                    offsets_l[num_l] = i + 6; num_l += !comp(*(first + (i + 6)), pivot);
+                    offsets_l[num_l] = i + 7; num_l += !comp(*(first + (i + 7)), pivot);
+                }
+            }
+            if (num_r == 0) {
+                start_r = 0;
+                for (int i = 0; i < block_size; i += 8) {
+                    offsets_r[num_r] = i + 0; num_r += comp(*(last - 1 - (i + 0)), pivot);
+                    offsets_r[num_r] = i + 1; num_r += comp(*(last - 1 - (i + 1)), pivot);
+                    offsets_r[num_r] = i + 2; num_r += comp(*(last - 1 - (i + 2)), pivot);
+                    offsets_r[num_r] = i + 3; num_r += comp(*(last - 1 - (i + 3)), pivot);
+                    offsets_r[num_r] = i + 4; num_r += comp(*(last - 1 - (i + 4)), pivot);
+                    offsets_r[num_r] = i + 5; num_r += comp(*(last - 1 - (i + 5)), pivot);
+                    offsets_r[num_r] = i + 6; num_r += comp(*(last - 1 - (i + 6)), pivot);
+                    offsets_r[num_r] = i + 7; num_r += comp(*(last - 1 - (i + 7)), pivot);
+                }
+            }
+
+            // Swap elements from the offset blocks.
+#define PDQSORT_LBUF(i) (first + offsets_l[start_l + (i)])
+#define PDQSORT_RBUF(i) (last - 1 - offsets_r[start_r + (i)])
+            int num = std::min(num_l, num_r);
+            if (num >= block_size - 1) {
+                // This case pretty much only happens in the descending distribution, where we need
+                // to have proper swapping for pdqsort to remain O(n).
+                for (int i = 0; i < num; ++i) std::iter_swap(PDQSORT_LBUF(i), PDQSORT_RBUF(i));
+            } else if (num > 0) {
+                T tmp(PDQSORT_PREFER_MOVE(*PDQSORT_LBUF(0)));
+                *PDQSORT_LBUF(0) = PDQSORT_PREFER_MOVE(*PDQSORT_RBUF(0));
+                for (int i = 1; i < num; ++i) {
+                    *PDQSORT_RBUF(i - 1) = PDQSORT_PREFER_MOVE(*PDQSORT_LBUF(i));
+                    *PDQSORT_LBUF(i) = PDQSORT_PREFER_MOVE(*PDQSORT_RBUF(i));
+                }
+                *PDQSORT_RBUF(num - 1) = PDQSORT_PREFER_MOVE(tmp);
+            }
+#undef PDQSORT_LBUF
+#undef PDQSORT_RBUF
+
+            // Update block sizes and first/last boundaries.
+            num_l -= num; num_r -= num;
+            start_l += num; start_r += num;
+            if (num_l == 0) first += block_size;
+            if (num_r == 0) last -= block_size;
+        }
+
+        // Keep swapping pairs of elements that are on the wrong side of the pivot. Previously
+        // swapped pairs guard the searches. Slightly odd if/while structure for tightest possible
+        // inner loop.
+        if (first < last) {
+            while (comp(*first, pivot)) ++first;
             while (!comp(*--last, pivot));
+            while (first < last) {
+                std::iter_swap(first, last);
+                while (comp(*++first, pivot));
+                while (!comp(*--last, pivot));
+            }
         }
 
         // Put the pivot in the right place.
