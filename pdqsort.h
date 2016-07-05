@@ -154,7 +154,7 @@ namespace pdqsort_detail {
     }
 
     template<class T>
-    T* align_cacheline(T* p) {
+    inline T* align_cacheline(T* p) {
         std::uintptr_t ip = reinterpret_cast<std::uintptr_t>(p);
         ip = (ip + cacheline_size - 1) & -cacheline_size;
         return reinterpret_cast<T*>(ip);
