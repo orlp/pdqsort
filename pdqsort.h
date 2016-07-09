@@ -19,14 +19,17 @@
     3. This notice may not be removed or altered from any source distribution.
 */
 
+
 #ifndef PDQSORT_H
 #define PDQSORT_H
 
-#include <utility>
 #include <algorithm>
+#include <cstddef>
 #include <functional>
+#include <utility>
 
 #if __cplusplus >= 201103L
+    #include <cstdint>
     #define PDQSORT_PREFER_MOVE(x) std::move(x)
 #else
     #define PDQSORT_PREFER_MOVE(x) (x)
@@ -42,7 +45,7 @@ namespace pdqsort_detail {
         // amount of element moves before giving up.
         partial_insertion_sort_limit = 8,
 
-        // Must be multiple of 8 due to loop unrolling.
+        // Must be multiple of 8 due to loop unrolling, and < 256 to fit in unsigned char.
         block_size = 64,
 
         // Cacheline size, assumes power of two.
@@ -155,9 +158,37 @@ namespace pdqsort_detail {
 
     template<class T>
     inline T* align_cacheline(T* p) {
+#ifdef UINTPTR_MAX
         std::uintptr_t ip = reinterpret_cast<std::uintptr_t>(p);
+#else
+        std::size_t ip = reinterpret_cast<std::size_t>(p);
+#endif
         ip = (ip + cacheline_size - 1) & -cacheline_size;
         return reinterpret_cast<T*>(ip);
+    }
+
+    template<class Iter>
+    inline void swap_offsets(Iter first, Iter last,
+                             unsigned char* offsets_l, unsigned char* offsets_r, int num) {
+        typedef typename std::iterator_traits<Iter>::value_type T;
+
+#define PDQSORT_LBUF(i) (first + offsets_l[i])
+#define PDQSORT_RBUF(i) (last - 1 - offsets_r[i])
+        if (num >= block_size - 1) {
+            // This case pretty much only happens in the descending distribution, where we need
+            // to have proper swapping for pdqsort to remain O(n).
+            for (int i = 0; i < num; ++i) std::iter_swap(PDQSORT_LBUF(i), PDQSORT_RBUF(i));
+        } else if (num > 0) {
+            T tmp(PDQSORT_PREFER_MOVE(*PDQSORT_LBUF(0)));
+            *PDQSORT_LBUF(0) = PDQSORT_PREFER_MOVE(*PDQSORT_RBUF(0));
+            for (int i = 1; i < num; ++i) {
+                *PDQSORT_RBUF(i - 1) = PDQSORT_PREFER_MOVE(*PDQSORT_LBUF(i));
+                *PDQSORT_LBUF(i) = PDQSORT_PREFER_MOVE(*PDQSORT_RBUF(i));
+            }
+            *PDQSORT_RBUF(num - 1) = PDQSORT_PREFER_MOVE(tmp);
+        }
+#undef PDQSORT_LBUF
+#undef PDQSORT_RBUF
     }
 
     // Partitions [begin, end) around pivot *begin using comparison function comp. Elements equal
@@ -204,57 +235,88 @@ namespace pdqsort_detail {
             // Fill up offset blocks with elements that are on the wrong side.
             if (num_l == 0) {
                 start_l = 0;
-                for (int i = 0; i < block_size; i += 8) {
-                    offsets_l[num_l] = i + 0; num_l += !comp(*(first + (i + 0)), pivot);
-                    offsets_l[num_l] = i + 1; num_l += !comp(*(first + (i + 1)), pivot);
-                    offsets_l[num_l] = i + 2; num_l += !comp(*(first + (i + 2)), pivot);
-                    offsets_l[num_l] = i + 3; num_l += !comp(*(first + (i + 3)), pivot);
-                    offsets_l[num_l] = i + 4; num_l += !comp(*(first + (i + 4)), pivot);
-                    offsets_l[num_l] = i + 5; num_l += !comp(*(first + (i + 5)), pivot);
-                    offsets_l[num_l] = i + 6; num_l += !comp(*(first + (i + 6)), pivot);
-                    offsets_l[num_l] = i + 7; num_l += !comp(*(first + (i + 7)), pivot);
+                for (int i = 0; i < block_size;) {
+                    offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot); ++i;
+                    offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot); ++i;
+                    offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot); ++i;
+                    offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot); ++i;
+                    offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot); ++i;
+                    offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot); ++i;
+                    offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot); ++i;
+                    offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot); ++i;
                 }
             }
             if (num_r == 0) {
                 start_r = 0;
-                for (int i = 0; i < block_size; i += 8) {
-                    offsets_r[num_r] = i + 0; num_r += comp(*(last - 1 - (i + 0)), pivot);
-                    offsets_r[num_r] = i + 1; num_r += comp(*(last - 1 - (i + 1)), pivot);
-                    offsets_r[num_r] = i + 2; num_r += comp(*(last - 1 - (i + 2)), pivot);
-                    offsets_r[num_r] = i + 3; num_r += comp(*(last - 1 - (i + 3)), pivot);
-                    offsets_r[num_r] = i + 4; num_r += comp(*(last - 1 - (i + 4)), pivot);
-                    offsets_r[num_r] = i + 5; num_r += comp(*(last - 1 - (i + 5)), pivot);
-                    offsets_r[num_r] = i + 6; num_r += comp(*(last - 1 - (i + 6)), pivot);
-                    offsets_r[num_r] = i + 7; num_r += comp(*(last - 1 - (i + 7)), pivot);
+                for (int i = 0; i < block_size;) {
+                    offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot); ++i;
+                    offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot); ++i;
+                    offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot); ++i;
+                    offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot); ++i;
+                    offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot); ++i;
+                    offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot); ++i;
+                    offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot); ++i;
+                    offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot); ++i;
                 }
             }
 
-            // Swap elements from the offset blocks.
-#define PDQSORT_LBUF(i) (first + offsets_l[start_l + (i)])
-#define PDQSORT_RBUF(i) (last - 1 - offsets_r[start_r + (i)])
+            // Swap elements and update block sizes and first/last boundaries.
             int num = std::min(num_l, num_r);
-            if (num >= block_size - 1) {
-                // This case pretty much only happens in the descending distribution, where we need
-                // to have proper swapping for pdqsort to remain O(n).
-                for (int i = 0; i < num; ++i) std::iter_swap(PDQSORT_LBUF(i), PDQSORT_RBUF(i));
-            } else if (num > 0) {
-                T tmp(PDQSORT_PREFER_MOVE(*PDQSORT_LBUF(0)));
-                *PDQSORT_LBUF(0) = PDQSORT_PREFER_MOVE(*PDQSORT_RBUF(0));
-                for (int i = 1; i < num; ++i) {
-                    *PDQSORT_RBUF(i - 1) = PDQSORT_PREFER_MOVE(*PDQSORT_LBUF(i));
-                    *PDQSORT_LBUF(i) = PDQSORT_PREFER_MOVE(*PDQSORT_RBUF(i));
-                }
-                *PDQSORT_RBUF(num - 1) = PDQSORT_PREFER_MOVE(tmp);
-            }
-#undef PDQSORT_LBUF
-#undef PDQSORT_RBUF
-
-            // Update block sizes and first/last boundaries.
+            swap_offsets(first, last, offsets_l + start_l, offsets_r + start_r, num);
             num_l -= num; num_r -= num;
             start_l += num; start_r += num;
             if (num_l == 0) first += block_size;
             if (num_r == 0) last -= block_size;
         }
+
+        // Handle leftover block.
+        if (num_l || num_r) {
+            int unknown_left = (last - first) - block_size;
+            int l_size = 0, r_size = 0;
+
+            // We have a full identified block on the one side, and some unknown items on the other.
+            if (num_r) {
+                l_size = unknown_left;
+                r_size = block_size;
+                start_l = 0;
+                for (int i = 0; i < unknown_left; ++i) {
+                    offsets_l[num_l] = i;
+                    num_l += !comp(*(first + i), pivot);
+                }
+            } else if (num_l) {
+                l_size = block_size;
+                r_size = unknown_left;
+                start_r = 0;
+                for (int i = 0; i < unknown_left; ++i) {
+                    offsets_r[num_r] = i;
+                    num_r += comp(*(last - 1 - i), pivot);
+                }
+            }
+
+            int num = std::min(num_l, num_r);
+            swap_offsets(first, last, offsets_l + start_l, offsets_r + start_r, num);
+            num_l -= num; num_r -= num;
+            start_l += num; start_r += num;
+            if (num_l == 0) first += l_size;
+            if (num_r == 0) last -= r_size;
+            
+            // We have now fully identified [first, last)'s proper position. Swap the last elements.
+            if (num_l) {
+                for (int i = num_l - 1; i >= 0; --i) {
+                    --last;
+                    std::iter_swap(first + offsets_l[start_l + i], last);
+                }
+                first = last;
+            }
+            if (num_r) {
+                for (int i = num_r - 1; i >= 0; --i) {
+                    std::iter_swap(last - 1 - offsets_r[start_r + i], first);
+                    ++first;
+                }
+                last = first;
+            }
+        }
+
 
         // Keep swapping pairs of elements that are on the wrong side of the pivot. Previously
         // swapped pairs guard the searches. Slightly odd if/while structure for tightest possible
@@ -279,6 +341,8 @@ namespace pdqsort_detail {
 
     // Similar function to the one above, except elements equal to the pivot are put to the left of
     // the pivot and it doesn't check or return if the passed sequence already was partitioned.
+    // Since this is rarely used (the many equal case), and in that case pdqsort already has O(n)
+    // performance, no block quicksort is applied here for simplicity.
     template<class Iter, class Compare>
     inline Iter partition_left(Iter begin, Iter end, Compare comp) {
         typedef typename std::iterator_traits<Iter>::value_type T;
