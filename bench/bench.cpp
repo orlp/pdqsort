@@ -16,7 +16,7 @@
     #include <intrin.h>
     #define rdtsc __rdtsc
 #else
-    #ifdef __i386__
+    #ifdef __i586__
         static __inline__ unsigned long long rdtsc() {
             unsigned long long int x;
             __asm__ volatile(".byte 0x0f, 0x31" : "=A" (x));
@@ -117,10 +117,11 @@ int main(int argc, char** argv) {
     };
 
     std::pair<std::string, SortF> sorts[] = {
-        {"heapsort", &heapsort<std::vector<int>::iterator, std::less<int>>},
-        {"introsort", &std::sort<std::vector<int>::iterator, std::less<int>>},
         {"pdqsort", &pdqsort<std::vector<int>::iterator, std::less<int>>},
-        {"timsort", &gfx::timsort<std::vector<int>::iterator, std::less<int>>}
+        {"std::sort", &std::sort<std::vector<int>::iterator, std::less<int>>},
+        {"std::stable_sort", &std::stable_sort<std::vector<int>::iterator, std::less<int>>},
+        // {"std::sort_heap", &heapsort<std::vector<int>::iterator, std::less<int>>},
+        // {"timsort", &gfx::timsort<std::vector<int>::iterator, std::less<int>>}
     };
 
     int sizes[] = {1000000};
@@ -142,6 +143,10 @@ int main(int argc, char** argv) {
                     uint64_t end = rdtsc();
                     cycles.push_back(double(end - start) / size + 0.5);
                     total_end = std::chrono::high_resolution_clock::now();
+                    // if (!std::is_sorted(v.begin(), v.end())) {
+                    //     std::cerr << "sort failed: ";
+                    //     std::cerr << size << " " << distribution.first << " " << sort.first << "\n";
+                    // }
                 }
                 
                 std::sort(cycles.begin(), cycles.end());

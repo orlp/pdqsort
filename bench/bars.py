@@ -1,8 +1,11 @@
 import math
 import os
+import sys
 
 import numpy
 from matplotlib import pyplot as plt
+
+cpu_info = sys.argv[1]
 
 
 
@@ -16,6 +19,8 @@ distribution_names = {
     "push_front_int": "Push front",
     "push_middle_int": "Push middle"
 }
+
+sort_order = ["pdqsort", "std::sort", "std::stable_sort", "timsort", "std::sort_heap"]
 
 for filename in os.listdir("profiles"):
     data = {}
@@ -32,8 +37,8 @@ for filename in os.listdir("profiles"):
     distributions = ("Shuffled", "Shuffled (16 values)", "All equal", "Ascending", "Descending",
                      "Pipe organ", "Push front", "Push middle")
 
-    algos = ("heapsort", "introsort", "pdqsort")
-    if "timsort" in data[size]["Shuffled"]: algos += ("timsort",)
+    algos = tuple(data[size]["Shuffled"].keys())
+    algos = tuple(sorted(algos, key=lambda a: sort_order.index(a)))
 
     groupnames = distributions
     groupsize = len(algos)
@@ -42,7 +47,7 @@ for filename in os.listdir("profiles"):
     spacing = 1
     groupwidth = groupsize * barwidth + spacing
 
-    colors = ["#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78"]
+    colors = ["#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78", "#800080"]
     for i, algo in enumerate(algos):
         heights = [numpy.median(data[size][distribution][algo]) for distribution in distributions]
         errors = [numpy.std(data[size][distribution][algo]) for distribution in distributions]
@@ -51,7 +56,7 @@ for filename in os.listdir("profiles"):
 
     # Set axes limits and labels.
     plt.yticks([barwidth * groupsize/2 + groupwidth*n for n in range(len(groupnames))], groupnames)
-    plt.xlabel("Cycles per element")
+    plt.xlabel("Cycles per element ({})".format(cpu_info))
 
     # Turn off ticks for y-axis.
     plt.tick_params(
@@ -67,11 +72,11 @@ for filename in os.listdir("profiles"):
     ax.relim()
     ax.autoscale_view()
     plt.ylim(plt.ylim()[0]+1, plt.ylim()[1]-1)
-    plt.legend(loc="lower right")
+    plt.legend(loc="right", fontsize=10)
 
-    plt.title("Sorting $10^{}$elements".format(round(math.log(size, 10))))
+    plt.title("Sorting $10^{}$ elements".format(round(math.log(size, 10))))
 
-    figure = plt.gcf() # get current figure
+    figure = plt.gcf()
     figure.set_size_inches(8*.75, 6*.75)
     plt.savefig(os.path.join("plots", os.path.splitext(filename)[0] + ".png"), dpi = 100, bbox_inches="tight")
 

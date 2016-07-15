@@ -11,10 +11,10 @@ All code is available for free under the zlib license.
 
 ### Benchmark
 
-A comparison of introsort (gcc `std::sort` at time of writing), heapsort (gcc `std::sort_heap`),
-pdqsort and timsort with various input distributions:
+A comparison of pdqsort and GCC's `std::sort`, `std::stable_sort` and `std::sort_heap` with various
+input distributions:
 
-![Performance graph](http://i.imgur.com/Mhm5FKy.png)
+![Performance graph](http://i.imgur.com/a2yqkMv.png)
 
 Compiled with `-std=c++11 -O2 -m64 -march=native`.
 
@@ -40,11 +40,24 @@ sort.
 
 ### The average case
 
-pdqsort in the average case is indistinguishable from a properly implemented quicksort. On average
-case data where no patterns are detected pdqsort is effectively a quicksort that uses median-of-3
-pivot selection, switching to insertion sort if the number of elements to be (recursively) sorted is
-small. The overhead associated with detecting the patterns for the best case is so small it lies
-within the error of measurement.
+On average case data where no patterns are detected pdqsort is effectively a quicksort that uses
+median-of-3 pivot selection, switching to insertion sort if the number of elements to be
+(recursively) sorted is small. The overhead associated with detecting the patterns for the best case
+is so small it lies within the error of measurement.
+
+pdqsort gets a great speedup over the traditional way of implementing quicksort when sorting large
+arrays (1000+ elements). This is due to a new technique described in "BlockQuicksort: How Branch
+Mispredictions don't affect Quicksort" by Stefan Edelkamp and Armin Weiss. In short, we bypass the
+branch predictor by using small buffers (entirely in L1 cache) of the indices of elements that need
+to be swapped. We fill these buffers in a branch-free way that's quite elegant (in pseudocode):
+
+    buffer_num = 0; buffer_max_size = 64;
+    for (int i = 0; i < buffer_max_size; ++i) {
+        // With branch:
+        if (elements[i] < pivot) { buffer[buffer_num] = i; buffer_num++; }
+        // Without:
+        buffer[buffer_num] = i; buffer_num += (elements[i] < pivot);
+    }
 
 
 ### The worst case
