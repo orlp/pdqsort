@@ -11,8 +11,8 @@ All code is available for free under the zlib license.
 
 ### Benchmark
 
-A comparison of pdqsort and GCC's `std::sort`, `std::stable_sort` and `std::sort_heap` with various
-input distributions:
+A comparison of pdqsort and GCC's `std::sort` and `std::stable_sort` with various input
+distributions:
 
 ![Performance graph](http://i.imgur.com/a2yqkMv.png)
 
