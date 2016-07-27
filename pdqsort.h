@@ -169,13 +169,14 @@ namespace pdqsort_detail {
 
     template<class Iter>
     inline void swap_offsets(Iter first, Iter last,
-                             unsigned char* offsets_l, unsigned char* offsets_r, int num) {
+                             unsigned char* offsets_l, unsigned char* offsets_r,
+                             int num, bool use_swaps) {
         typedef typename std::iterator_traits<Iter>::value_type T;
 
 #define PDQSORT_LBUF(i) (first + offsets_l[i])
 #define PDQSORT_RBUF(i) (last - 1 - offsets_r[i])
-        if (num >= block_size - 1) {
-            // This case pretty much only happens in the descending distribution, where we need
+        if (use_swaps) {
+            // This case is needed for the descending distribution, where we need
             // to have proper swapping for pdqsort to remain O(n).
             for (int i = 0; i < num; ++i) std::iter_swap(PDQSORT_LBUF(i), PDQSORT_RBUF(i));
         } else if (num > 0) {
@@ -262,73 +263,60 @@ namespace pdqsort_detail {
 
             // Swap elements and update block sizes and first/last boundaries.
             int num = std::min(num_l, num_r);
-            swap_offsets(first, last, offsets_l + start_l, offsets_r + start_r, num);
+            swap_offsets(first, last, offsets_l + start_l, offsets_r + start_r,
+                         num, num_l == num_r);
             num_l -= num; num_r -= num;
             start_l += num; start_r += num;
             if (num_l == 0) first += block_size;
             if (num_r == 0) last -= block_size;
         }
 
-        // Handle leftover block.
-        if (num_l || num_r) {
-            int unknown_left = (last - first) - block_size;
-            int l_size = 0, r_size = 0;
+        int l_size = 0, r_size = 0;
+        int unknown_left = (last - first) - ((num_r || num_l) ? block_size : 0);
+        if (num_r) {
+            // Handle leftover block by assigning the unknown elements to the other block.
+            l_size = unknown_left;
+            r_size = block_size;
+        } else if (num_l) {
+            l_size = block_size;
+            r_size = unknown_left;
+        } else {
+            // No leftover block, split the unknown elements in two blocks.
+            l_size = unknown_left/2;
+            r_size = unknown_left - l_size;
+        }
 
-            // We have a full identified block on the one side, and some unknown items on the other.
-            if (num_r) {
-                l_size = unknown_left;
-                r_size = block_size;
-                start_l = 0;
-                for (int i = 0; i < unknown_left; ++i) {
-                    offsets_l[num_l] = i;
-                    num_l += !comp(*(first + i), pivot);
-                }
-            } else if (num_l) {
-                l_size = block_size;
-                r_size = unknown_left;
-                start_r = 0;
-                for (int i = 0; i < unknown_left; ++i) {
-                    offsets_r[num_r] = i;
-                    num_r += comp(*(last - 1 - i), pivot);
-                }
+        // Fill offset buffers if needed.
+        if (unknown_left && !num_l) {
+            start_l = 0;
+            for (int i = 0; i < l_size; ++i) {
+                offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot);
             }
-
-            int num = std::min(num_l, num_r);
-            swap_offsets(first, last, offsets_l + start_l, offsets_r + start_r, num);
-            num_l -= num; num_r -= num;
-            start_l += num; start_r += num;
-            if (num_l == 0) first += l_size;
-            if (num_r == 0) last -= r_size;
-            
-            // We have now fully identified [first, last)'s proper position. Swap the last elements.
-            if (num_l) {
-                for (int i = num_l - 1; i >= 0; --i) {
-                    --last;
-                    std::iter_swap(first + offsets_l[start_l + i], last);
-                }
-                first = last;
-            }
-            if (num_r) {
-                for (int i = num_r - 1; i >= 0; --i) {
-                    std::iter_swap(last - 1 - offsets_r[start_r + i], first);
-                    ++first;
-                }
-                last = first;
+        }
+        if (unknown_left && !num_r) {
+            start_r = 0;
+            for (int i = 0; i < r_size; ++i) {
+                offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot);
             }
         }
 
-
-        // Keep swapping pairs of elements that are on the wrong side of the pivot. Previously
-        // swapped pairs guard the searches. Slightly odd if/while structure for tightest possible
-        // inner loop.
-        if (first < last) {
-            while (comp(*first, pivot)) ++first;
-            while (!comp(*--last, pivot));
-            while (first < last) {
-                std::iter_swap(first, last);
-                while (comp(*++first, pivot));
-                while (!comp(*--last, pivot));
-            }
+        int num = std::min(num_l, num_r);
+        swap_offsets(first, last, offsets_l + start_l, offsets_r + start_r, num, num_l == num_r);
+        num_l -= num; num_r -= num;
+        start_l += num; start_r += num;
+        if (num_l == 0) first += l_size;
+        if (num_r == 0) last -= r_size;
+        
+        // We have now fully identified [first, last)'s proper position. Swap the last elements.
+        if (num_l) {
+            offsets_l += start_l;
+            while (num_l--) std::iter_swap(first + offsets_l[num_l], --last);
+            first = last;
+        }
+        if (num_r) {
+            offsets_r += start_r;
+            while (num_r--) std::iter_swap(last - 1 - offsets_r[num_r], first), ++first;
+            last = first;
         }
 
         // Put the pivot in the right place.
