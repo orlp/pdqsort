@@ -124,7 +124,7 @@ int main(int argc, char** argv) {
         // {"timsort", &gfx::timsort<std::vector<int>::iterator, std::less<int>>}
     };
 
-    int sizes[] = {1000000};
+    int sizes[] = {1000000, 100};
 
     for (auto& distribution : distributions) {
         for (auto& sort : sorts) {
@@ -136,7 +136,7 @@ int main(int argc, char** argv) {
                 
                 total_start = std::chrono::high_resolution_clock::now();
                 total_end = std::chrono::high_resolution_clock::now();
-                while (std::chrono::duration_cast<std::chrono::milliseconds>(total_end - total_start).count() < 10000) {
+                while (std::chrono::duration_cast<std::chrono::milliseconds>(total_end - total_start).count() < 5000) {
                     std::vector<int> v = distribution.second(size, el);
                     uint64_t start = rdtsc();
                     sort.second(v.begin(), v.end(), std::less<int>());
@@ -151,10 +151,10 @@ int main(int argc, char** argv) {
                 
                 std::sort(cycles.begin(), cycles.end());
 
-                std::cerr << size << " " << distribution.first << " " << sort.first << "\n";
-                std::cout << size << " " << distribution.first << " " << sort.first << " ";
-                for (uint64_t cycle : cycles) std::cout << cycle << " ";
-                std::cout << "\n";
+                std::cerr << size << " " << distribution.first << " " << sort.first
+                          << " " << cycles[cycles.size()/2] << "\n";
+                std::cout << size << " " << distribution.first << " " << sort.first
+                          << " " << cycles[cycles.size()/2] << "\n";
             }
         }
     }
