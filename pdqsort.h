@@ -236,7 +236,7 @@ namespace pdqsort_detail {
             // Fill up offset blocks with elements that are on the wrong side.
             if (num_l == 0) {
                 start_l = 0;
-                for (int i = 0; i < block_size;) {
+                for (unsigned char i = 0; i < block_size;) {
                     offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot); ++i;
                     offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot); ++i;
                     offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot); ++i;
@@ -249,7 +249,7 @@ namespace pdqsort_detail {
             }
             if (num_r == 0) {
                 start_r = 0;
-                for (int i = 0; i < block_size;) {
+                for (unsigned char i = 0; i < block_size;) {
                     offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot); ++i;
                     offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot); ++i;
                     offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot); ++i;
@@ -289,13 +289,13 @@ namespace pdqsort_detail {
         // Fill offset buffers if needed.
         if (unknown_left && !num_l) {
             start_l = 0;
-            for (int i = 0; i < l_size; ++i) {
+            for (unsigned char i = 0; i < l_size; ++i) {
                 offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot);
             }
         }
         if (unknown_left && !num_r) {
             start_r = 0;
-            for (int i = 0; i < r_size; ++i) {
+            for (unsigned char i = 0; i < r_size; ++i) {
                 offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot);
             }
         }
