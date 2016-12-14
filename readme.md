@@ -14,9 +14,19 @@ All code is available for free under the zlib license.
 A comparison of pdqsort and GCC's `std::sort` and `std::stable_sort` with various input
 distributions:
 
-![Performance graph](http://i.imgur.com/a2yqkMv.png)
+![Performance graph](http://i.imgur.com/1RnIGBO.png)
 
 Compiled with `-std=c++11 -O2 -m64 -march=native`.
+
+
+### Visualization
+
+A visualization of pattern-defeating quicksort sorting a ~200 element array with some duplicates.
+Generated using Timo Bingmann's [The Sound of Sorting](http://panthema.net/2013/sound-of-sorting/)
+program, a tool that has been invaluable during the development of pdqsort. For the purposes of
+this visualization the cutoff point for insertion sort was lowered to 8 elements.
+
+![Visualization](http://i.imgur.com/QzFG09F.gif)
 
 
 ### The best case
