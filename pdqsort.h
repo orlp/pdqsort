@@ -171,14 +171,14 @@ namespace pdqsort_detail {
             // This case is needed for the descending distribution, where we need
             // to have proper swapping for pdqsort to remain O(n).
             for (int i = 0; i < num; ++i) {
-                std::iter_swap(first + offsets_l[i], last - (1 + offsets_r[i]));
+                std::iter_swap(first + offsets_l[i], last - offsets_r[i]);
             }
         } else if (num > 0) {
-            Iter l = first + offsets_l[0]; Iter r = last - (1 + offsets_r[0]);
+            Iter l = first + offsets_l[0]; Iter r = last - offsets_r[0];
             T tmp(PDQSORT_PREFER_MOVE(*l)); *l = PDQSORT_PREFER_MOVE(*r);
             for (int i = 1; i < num; ++i) {
                 l = first + offsets_l[i]; *r = PDQSORT_PREFER_MOVE(*l);
-                r = last - (1 + offsets_r[i]); *l = PDQSORT_PREFER_MOVE(*r);
+                r = last - offsets_r[i]; *l = PDQSORT_PREFER_MOVE(*r);
             }
             *r = PDQSORT_PREFER_MOVE(tmp);
         }
@@ -244,14 +244,14 @@ namespace pdqsort_detail {
                 start_r = 0;
                 Iter it = last;
                 for (unsigned char i = 0; i < block_size;) {
-                    offsets_r[num_r] = i++; num_r += comp(*--it, pivot);
-                    offsets_r[num_r] = i++; num_r += comp(*--it, pivot);
-                    offsets_r[num_r] = i++; num_r += comp(*--it, pivot);
-                    offsets_r[num_r] = i++; num_r += comp(*--it, pivot);
-                    offsets_r[num_r] = i++; num_r += comp(*--it, pivot);
-                    offsets_r[num_r] = i++; num_r += comp(*--it, pivot);
-                    offsets_r[num_r] = i++; num_r += comp(*--it, pivot);
-                    offsets_r[num_r] = i++; num_r += comp(*--it, pivot);
+                    offsets_r[num_r] = ++i; num_r += comp(*--it, pivot);
+                    offsets_r[num_r] = ++i; num_r += comp(*--it, pivot);
+                    offsets_r[num_r] = ++i; num_r += comp(*--it, pivot);
+                    offsets_r[num_r] = ++i; num_r += comp(*--it, pivot);
+                    offsets_r[num_r] = ++i; num_r += comp(*--it, pivot);
+                    offsets_r[num_r] = ++i; num_r += comp(*--it, pivot);
+                    offsets_r[num_r] = ++i; num_r += comp(*--it, pivot);
+                    offsets_r[num_r] = ++i; num_r += comp(*--it, pivot);
                 }
             }
 
@@ -284,15 +284,15 @@ namespace pdqsort_detail {
         if (unknown_left && !num_l) {
             start_l = 0;
             Iter it = first;
-            for (unsigned char i = 0; i < l_size; ++i) {
-                offsets_l[num_l] = i; num_l += !comp(*it, pivot); ++it;
+            for (unsigned char i = 0; i < l_size;) {
+                offsets_l[num_l] = i++; num_l += !comp(*it, pivot); ++it;
             }
         }
         if (unknown_left && !num_r) {
             start_r = 0;
             Iter it = last;
-            for (unsigned char i = 0; i < r_size; ++i) {
-                offsets_r[num_r] = i; num_r += comp(*--it, pivot);
+            for (unsigned char i = 0; i < r_size;) {
+                offsets_r[num_r] = ++i; num_r += comp(*--it, pivot);
             }
         }
 
@@ -311,7 +311,7 @@ namespace pdqsort_detail {
         }
         if (num_r) {
             offsets_r += start_r;
-            while (num_r--) std::iter_swap(last - (1 + offsets_r[num_r]), first), ++first;
+            while (num_r--) std::iter_swap(last - offsets_r[num_r], first), ++first;
             last = first;
         }
 
