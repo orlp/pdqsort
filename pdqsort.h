@@ -41,6 +41,9 @@ namespace pdqsort_detail {
         // Partitions below this size are sorted using insertion sort.
         insertion_sort_threshold = 24,
 
+        // Partitions above this size use Tukey's ninther to select the pivot.
+        ninther_threshold = 80,
+
         // When we detect an already sorted partition, attempt an insertion sort that allows this
         // amount of element moves before giving up.
         partial_insertion_sort_limit = 8,
@@ -135,25 +138,17 @@ namespace pdqsort_detail {
         return true;
     }
 
+    template<class Iter, class Compare>
+    inline void sort2(Iter a, Iter b, Compare comp) {
+        if (comp(*b, *a)) std::iter_swap(a, b);
+    }
+
     // Sorts the elements *a, *b and *c using comparison function comp.
     template<class Iter, class Compare>
     inline void sort3(Iter a, Iter b, Iter c, Compare comp) {
-        if (!comp(*b, *a)) {
-            if (!comp(*c, *b)) return;
-
-            std::iter_swap(b, c);
-            if (comp(*b, *a)) std::iter_swap(a, b);
-
-            return;
-        }
-
-        if (comp(*c, *b)) {
-            std::iter_swap(a, c);
-            return;
-        }
-
-        std::iter_swap(a, b);
-        if (comp(*c, *b)) std::iter_swap(b, c);
+        sort2(a, b, comp);
+        sort2(b, c, comp);
+        sort2(a, b, comp);
     }
 
     template<class T>
@@ -172,24 +167,21 @@ namespace pdqsort_detail {
                              unsigned char* offsets_l, unsigned char* offsets_r,
                              int num, bool use_swaps) {
         typedef typename std::iterator_traits<Iter>::value_type T;
-
-#define PDQSORT_LBUF(i) (first + offsets_l[i])
-#define PDQSORT_RBUF(i) (last - 1 - offsets_r[i])
         if (use_swaps) {
             // This case is needed for the descending distribution, where we need
             // to have proper swapping for pdqsort to remain O(n).
-            for (int i = 0; i < num; ++i) std::iter_swap(PDQSORT_LBUF(i), PDQSORT_RBUF(i));
-        } else if (num > 0) {
-            T tmp(PDQSORT_PREFER_MOVE(*PDQSORT_LBUF(0)));
-            *PDQSORT_LBUF(0) = PDQSORT_PREFER_MOVE(*PDQSORT_RBUF(0));
-            for (int i = 1; i < num; ++i) {
-                *PDQSORT_RBUF(i - 1) = PDQSORT_PREFER_MOVE(*PDQSORT_LBUF(i));
-                *PDQSORT_LBUF(i) = PDQSORT_PREFER_MOVE(*PDQSORT_RBUF(i));
+            for (int i = 0; i < num; ++i) {
+                std::iter_swap(first + offsets_l[i], last - (1 + offsets_r[i]));
             }
-            *PDQSORT_RBUF(num - 1) = PDQSORT_PREFER_MOVE(tmp);
+        } else if (num > 0) {
+            Iter l = first + offsets_l[0]; Iter r = last - (1 + offsets_r[0]);
+            T tmp(PDQSORT_PREFER_MOVE(*l)); *l = PDQSORT_PREFER_MOVE(*r);
+            for (int i = 1; i < num; ++i) {
+                l = first + offsets_l[i]; *r = PDQSORT_PREFER_MOVE(*l);
+                r = last - (1 + offsets_r[i]); *l = PDQSORT_PREFER_MOVE(*r);
+            }
+            *r = PDQSORT_PREFER_MOVE(tmp);
         }
-#undef PDQSORT_LBUF
-#undef PDQSORT_RBUF
     }
 
     // Partitions [begin, end) around pivot *begin using comparison function comp. Elements equal
@@ -236,28 +228,30 @@ namespace pdqsort_detail {
             // Fill up offset blocks with elements that are on the wrong side.
             if (num_l == 0) {
                 start_l = 0;
+                Iter it = first;
                 for (unsigned char i = 0; i < block_size;) {
-                    offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot); ++i;
-                    offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot); ++i;
-                    offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot); ++i;
-                    offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot); ++i;
-                    offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot); ++i;
-                    offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot); ++i;
-                    offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot); ++i;
-                    offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot); ++i;
+                    offsets_l[num_l] = i++; num_l += !comp(*it, pivot); ++it;
+                    offsets_l[num_l] = i++; num_l += !comp(*it, pivot); ++it;
+                    offsets_l[num_l] = i++; num_l += !comp(*it, pivot); ++it;
+                    offsets_l[num_l] = i++; num_l += !comp(*it, pivot); ++it;
+                    offsets_l[num_l] = i++; num_l += !comp(*it, pivot); ++it;
+                    offsets_l[num_l] = i++; num_l += !comp(*it, pivot); ++it;
+                    offsets_l[num_l] = i++; num_l += !comp(*it, pivot); ++it;
+                    offsets_l[num_l] = i++; num_l += !comp(*it, pivot); ++it;
                 }
             }
             if (num_r == 0) {
                 start_r = 0;
+                Iter it = last;
                 for (unsigned char i = 0; i < block_size;) {
-                    offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot); ++i;
-                    offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot); ++i;
-                    offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot); ++i;
-                    offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot); ++i;
-                    offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot); ++i;
-                    offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot); ++i;
-                    offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot); ++i;
-                    offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot); ++i;
+                    offsets_r[num_r] = i++; num_r += comp(*--it, pivot);
+                    offsets_r[num_r] = i++; num_r += comp(*--it, pivot);
+                    offsets_r[num_r] = i++; num_r += comp(*--it, pivot);
+                    offsets_r[num_r] = i++; num_r += comp(*--it, pivot);
+                    offsets_r[num_r] = i++; num_r += comp(*--it, pivot);
+                    offsets_r[num_r] = i++; num_r += comp(*--it, pivot);
+                    offsets_r[num_r] = i++; num_r += comp(*--it, pivot);
+                    offsets_r[num_r] = i++; num_r += comp(*--it, pivot);
                 }
             }
 
@@ -289,14 +283,16 @@ namespace pdqsort_detail {
         // Fill offset buffers if needed.
         if (unknown_left && !num_l) {
             start_l = 0;
+            Iter it = first;
             for (unsigned char i = 0; i < l_size; ++i) {
-                offsets_l[num_l] = i; num_l += !comp(*(first + i), pivot);
+                offsets_l[num_l] = i; num_l += !comp(*it, pivot); ++it;
             }
         }
         if (unknown_left && !num_r) {
             start_r = 0;
+            Iter it = last;
             for (unsigned char i = 0; i < r_size; ++i) {
-                offsets_r[num_r] = i; num_r += comp(*(last - 1 - i), pivot);
+                offsets_r[num_r] = i; num_r += comp(*--it, pivot);
             }
         }
 
@@ -315,7 +311,7 @@ namespace pdqsort_detail {
         }
         if (num_r) {
             offsets_r += start_r;
-            while (num_r--) std::iter_swap(last - 1 - offsets_r[num_r], first), ++first;
+            while (num_r--) std::iter_swap(last - (1 + offsets_r[num_r]), first), ++first;
             last = first;
         }
 
@@ -373,8 +369,15 @@ namespace pdqsort_detail {
                 return;
             }
 
-            // Choose pivot as median of 3.
-            sort3(begin + size / 2, begin, end - 1, comp);
+            // Choose pivot as median of 3 or pseudomedian of 9.
+            diff_t s2 = size / 2;
+            if (size > ninther_threshold) {
+                sort3(begin, begin + s2, end - 1, comp);
+                sort3(begin + 1, begin + (s2 - 1), end - 2, comp);
+                sort3(begin + 2, begin + (s2 + 1), end - 3, comp);
+                sort3(begin + (s2 - 1), begin + s2, begin + (s2 + 1), comp);
+                std::iter_swap(begin, begin + s2);
+            } else sort3(begin + s2, begin, end - 1, comp);
 
             // If *(begin - 1) is the end of the right partition of a previous partition operation
             // there is no element in [begin, end) that is smaller than *(begin - 1). Then if our
@@ -408,11 +411,25 @@ namespace pdqsort_detail {
                 if (l_size >= insertion_sort_threshold) {
                     std::iter_swap(begin,             begin + l_size / 4);
                     std::iter_swap(pivot_pos - 1, pivot_pos - l_size / 4);
+
+                    if (l_size > ninther_threshold) {
+                        std::iter_swap(begin + 1,         begin + (l_size / 4 + 1));
+                        std::iter_swap(begin + 2,         begin + (l_size / 4 + 2));
+                        std::iter_swap(pivot_pos - 2, pivot_pos - (l_size / 4 + 1));
+                        std::iter_swap(pivot_pos - 3, pivot_pos - (l_size / 4 + 2));
+                    }
                 }
                 
                 if (r_size >= insertion_sort_threshold) {
-                    std::iter_swap(pivot_pos + 1, pivot_pos + 1 + r_size / 4);
-                    std::iter_swap(end - 1,                 end - r_size / 4);
+                    std::iter_swap(pivot_pos + 1, pivot_pos + (1 + r_size / 4));
+                    std::iter_swap(end - 1,                   end - r_size / 4);
+                    
+                    if (r_size > ninther_threshold) {
+                        std::iter_swap(pivot_pos + 2, pivot_pos + (2 + r_size / 4));
+                        std::iter_swap(pivot_pos + 3, pivot_pos + (3 + r_size / 4));
+                        std::iter_swap(end - 2,             end - (1 + r_size / 4));
+                        std::iter_swap(end - 3,             end - (2 + r_size / 4));
+                    }
                 }
             } else {
                 // If we were decently balanced and we tried to sort an already partitioned
