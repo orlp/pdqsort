@@ -230,28 +230,44 @@ namespace pdqsort_detail {
                 start_l = 0;
                 Iter it = first;
                 for (unsigned char i = 0; i < block_size;) {
-                    offsets_l[num_l] = i++; num_l += !comp(*it, pivot); ++it;
-                    offsets_l[num_l] = i++; num_l += !comp(*it, pivot); ++it;
-                    offsets_l[num_l] = i++; num_l += !comp(*it, pivot); ++it;
-                    offsets_l[num_l] = i++; num_l += !comp(*it, pivot); ++it;
-                    offsets_l[num_l] = i++; num_l += !comp(*it, pivot); ++it;
-                    offsets_l[num_l] = i++; num_l += !comp(*it, pivot); ++it;
-                    offsets_l[num_l] = i++; num_l += !comp(*it, pivot); ++it;
-                    offsets_l[num_l] = i++; num_l += !comp(*it, pivot); ++it;
+                    bool c0 = !comp(*it, pivot); ++it;
+                    bool c1 = !comp(*it, pivot); ++it;
+                    bool c2 = !comp(*it, pivot); ++it;
+                    bool c3 = !comp(*it, pivot); ++it;
+                    bool c4 = !comp(*it, pivot); ++it;
+                    bool c5 = !comp(*it, pivot); ++it;
+                    bool c6 = !comp(*it, pivot); ++it;
+                    bool c7 = !comp(*it, pivot); ++it;
+                    offsets_l[num_l] = i++; num_l += c0;
+                    offsets_l[num_l] = i++; num_l += c1;
+                    offsets_l[num_l] = i++; num_l += c2;
+                    offsets_l[num_l] = i++; num_l += c3;
+                    offsets_l[num_l] = i++; num_l += c4;
+                    offsets_l[num_l] = i++; num_l += c5;
+                    offsets_l[num_l] = i++; num_l += c6;
+                    offsets_l[num_l] = i++; num_l += c7;
                 }
             }
             if (num_r == 0) {
                 start_r = 0;
                 Iter it = last;
                 for (unsigned char i = 0; i < block_size;) {
-                    offsets_r[num_r] = ++i; num_r += comp(*--it, pivot);
-                    offsets_r[num_r] = ++i; num_r += comp(*--it, pivot);
-                    offsets_r[num_r] = ++i; num_r += comp(*--it, pivot);
-                    offsets_r[num_r] = ++i; num_r += comp(*--it, pivot);
-                    offsets_r[num_r] = ++i; num_r += comp(*--it, pivot);
-                    offsets_r[num_r] = ++i; num_r += comp(*--it, pivot);
-                    offsets_r[num_r] = ++i; num_r += comp(*--it, pivot);
-                    offsets_r[num_r] = ++i; num_r += comp(*--it, pivot);
+                    bool c0 = comp(*--it, pivot);
+                    bool c1 = comp(*--it, pivot);
+                    bool c2 = comp(*--it, pivot);
+                    bool c3 = comp(*--it, pivot);
+                    bool c4 = comp(*--it, pivot);
+                    bool c5 = comp(*--it, pivot);
+                    bool c6 = comp(*--it, pivot);
+                    bool c7 = comp(*--it, pivot);
+                    offsets_r[num_r] = ++i; num_r += c0;
+                    offsets_r[num_r] = ++i; num_r += c1;
+                    offsets_r[num_r] = ++i; num_r += c2;
+                    offsets_r[num_r] = ++i; num_r += c3;
+                    offsets_r[num_r] = ++i; num_r += c4;
+                    offsets_r[num_r] = ++i; num_r += c5;
+                    offsets_r[num_r] = ++i; num_r += c6;
+                    offsets_r[num_r] = ++i; num_r += c7;
                 }
             }
 
