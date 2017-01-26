@@ -69,6 +69,11 @@ to be swapped. We fill these buffers in a branch-free way that's quite elegant (
         buffer[buffer_num] = i; buffer_num += (elements[i] < pivot);
     }
 
+This is only a speedup if the comparison function itself is branchless, however. By default pdqsort
+will detect this if you're using C++11 or higher, the type you're sorting is arithmetic (e.g.
+`int`), and you're using either `std::less` or `std::greater`. You can explicitly request branchless
+partitioning by calling `pdqsort_branchless` instead of `pdqsort`.
+
 
 ### The worst case
 
