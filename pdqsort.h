@@ -27,6 +27,7 @@
 #include <cstddef>
 #include <functional>
 #include <utility>
+#include <iterator>
 
 #if __cplusplus >= 201103L
     #include <cstdint>
