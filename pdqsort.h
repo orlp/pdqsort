@@ -444,9 +444,9 @@ namespace pdqsort_detail {
             }
 
             // Partition and get results.
-            std::pair<Iter, bool> part_result;
-            if (Branchless) part_result = partition_right_branchless(begin, end, comp);
-            else            part_result = partition_right(begin, end, comp);
+            std::pair<Iter, bool> part_result =
+                Branchless ? partition_right_branchless(begin, end, comp)
+                           : partition_right(begin, end, comp);
             Iter pivot_pos = part_result.first;
             bool already_partitioned = part_result.second;
 
