@@ -14,8 +14,8 @@ All code is available for free under the zlib license.
 `pdqsort` is a drop-in replacement for [`std::sort`](http://en.cppreference.com/w/cpp/algorithm/sort).
 Just replace a call to `std::sort` with `pdqsort` to start using pattern-defeating quicksort. If your
 comparison function is branchless, you can call `pdqsort_branchless` for a potential big speedup. If
-the type you're sorting is arithmetic and your comparison function is not given or is `std::less`/`std::greater`,
-`pdqsort` automatically delegates to `pdqsort_branchless`.
+you are using C++11, the type you're sorting is arithmetic and your comparison function is not given
+or is `std::less`/`std::greater`, `pdqsort` automatically delegates to `pdqsort_branchless`.
 
 ### Benchmark
 
