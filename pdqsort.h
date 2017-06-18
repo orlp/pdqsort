@@ -162,7 +162,7 @@ namespace pdqsort_detail {
 
     template<class T>
     inline T* align_cacheline(T* p) {
-#ifdef UINTPTR_MAX
+#if defined(UINTPTR_MAX) && __cplusplus >= 201103L
         std::uintptr_t ip = reinterpret_cast<std::uintptr_t>(p);
 #else
         std::size_t ip = reinterpret_cast<std::size_t>(p);
