@@ -41,7 +41,7 @@ this visualization the cutoff point for insertion sort was lowered to 8 elements
 
 pdqsort is designed to run in linear time for a couple of best-case patterns. Linear time is
 achieved for inputs that are in strictly ascending or descending order, only contain equal elements,
-or are strictly in ascending order followed by one out-of-place element. There are two seperate
+or are strictly in ascending order followed by one out-of-place element. There are two separate
 mechanisms at play to achieve this.
 
 For equal elements a smart partitioning scheme is used that always puts equal elements in the
