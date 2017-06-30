@@ -38,6 +38,8 @@
 #endif
 
 
+namespace pdq {
+
 namespace pdqsort_detail {
     enum {
         // Partitions below this size are sorted using insertion sort.
@@ -505,7 +507,7 @@ namespace pdqsort_detail {
 
 
 template<class Iter, class Compare>
-inline void pdqsort(Iter begin, Iter end, Compare comp) {
+inline void sort(Iter begin, Iter end, Compare comp) {
     if (begin == end) return;
 
 #if __cplusplus >= 201103L
@@ -520,23 +522,45 @@ inline void pdqsort(Iter begin, Iter end, Compare comp) {
 }
 
 template<class Iter>
-inline void pdqsort(Iter begin, Iter end) {
+inline void sort(Iter begin, Iter end) {
     typedef typename std::iterator_traits<Iter>::value_type T;
-    pdqsort(begin, end, std::less<T>());
+    sort(begin, end, std::less<T>());
+}
+
+template<class Iter>
+inline void pdqsort(Iter begin, Iter end) {
+    ::pdq::sort(begin, end);
+}
+template<class Iter, class Compare>
+inline void pdqsort(Iter begin, Iter end, Compare comp) {
+    ::pdq::sort(begin, end, comp);
 }
 
 template<class Iter, class Compare>
-inline void pdqsort_branchless(Iter begin, Iter end, Compare comp) {
+inline void sort_branchless(Iter begin, Iter end, Compare comp) {
     if (begin == end) return;
     pdqsort_detail::pdqsort_loop<Iter, Compare, true>(
         begin, end, comp, pdqsort_detail::log2(end - begin));
 }
 
+template<class Iter, class Compare>
+inline void pdqsort_branchless(Iter begin, Iter end, Compare comp) {
+    ::pdq::pdqsort_branchless<Iter, Compare>(begin, end, comp);
+}
+
+template<class Iter>
+inline void sort_branchless(Iter begin, Iter end) {
+    typedef typename std::iterator_traits<Iter>::value_type T;
+    sort_branchless(begin, end, std::less<T>());
+}
+
 template<class Iter>
 inline void pdqsort_branchless(Iter begin, Iter end) {
     typedef typename std::iterator_traits<Iter>::value_type T;
-    pdqsort_branchless(begin, end, std::less<T>());
+    sort_branchless<Iter>(begin, end, std::less<T>());
 }
+
+} // namespace pdq
 
 
 #undef PDQSORT_PREFER_MOVE
