@@ -17,6 +17,8 @@
        being the original software.
 
     3. This notice may not be removed or altered from any source distribution.
+
+    [Note - June, 2017: I have added a namespace while maintaining backwards compatibility - Daniel Baker.]
 */
 
 
@@ -524,16 +526,7 @@ inline void sort(Iter begin, Iter end, Compare comp) {
 template<class Iter>
 inline void sort(Iter begin, Iter end) {
     typedef typename std::iterator_traits<Iter>::value_type T;
-    sort(begin, end, std::less<T>());
-}
-
-template<class Iter>
-inline void pdqsort(Iter begin, Iter end) {
-    ::pdq::sort(begin, end);
-}
-template<class Iter, class Compare>
-inline void pdqsort(Iter begin, Iter end, Compare comp) {
-    ::pdq::sort(begin, end, comp);
+    ::pdq::sort(begin, end, std::less<T>());
 }
 
 template<class Iter, class Compare>
@@ -543,15 +536,15 @@ inline void sort_branchless(Iter begin, Iter end, Compare comp) {
         begin, end, comp, pdqsort_detail::log2(end - begin));
 }
 
-template<class Iter, class Compare>
-inline void pdqsort_branchless(Iter begin, Iter end, Compare comp) {
-    ::pdq::pdqsort_branchless<Iter, Compare>(begin, end, comp);
-}
-
 template<class Iter>
 inline void sort_branchless(Iter begin, Iter end) {
     typedef typename std::iterator_traits<Iter>::value_type T;
     sort_branchless(begin, end, std::less<T>());
+}
+
+template<class Iter, class Compare>
+inline void pdqsort_branchless(Iter begin, Iter end, Compare comp) {
+    ::pdq::sort_branchless<Iter, Compare>(begin, end, comp);
 }
 
 template<class Iter>
@@ -561,6 +554,11 @@ inline void pdqsort_branchless(Iter begin, Iter end) {
 }
 
 } // namespace pdq
+
+template<typename Iter,class Compare>
+void pdqsort(Iter begin, Iter end, Compare cmp) {::pdq::sort(begin, end, cmp);}
+template<typename Iter,class Compare>
+void pdqsort(Iter begin, Iter end) {::pdq::sort(begin, end, std::less<typename std::iterator_traits<Iter>::value_type>());}
 
 
 #undef PDQSORT_PREFER_MOVE
