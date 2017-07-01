@@ -539,18 +539,7 @@ inline void sort_branchless(Iter begin, Iter end, Compare comp) {
 template<class Iter>
 inline void sort_branchless(Iter begin, Iter end) {
     typedef typename std::iterator_traits<Iter>::value_type T;
-    sort_branchless(begin, end, std::less<T>());
-}
-
-template<class Iter, class Compare>
-inline void pdqsort_branchless(Iter begin, Iter end, Compare comp) {
-    ::pdq::sort_branchless<Iter, Compare>(begin, end, comp);
-}
-
-template<class Iter>
-inline void pdqsort_branchless(Iter begin, Iter end) {
-    typedef typename std::iterator_traits<Iter>::value_type T;
-    sort_branchless<Iter>(begin, end, std::less<T>());
+    ::pdq::sort_branchless(begin, end, std::less<T>());
 }
 
 } // namespace pdq
@@ -559,7 +548,6 @@ template<typename Iter,class Compare>
 void pdqsort(Iter begin, Iter end, Compare cmp) {::pdq::sort(begin, end, cmp);}
 template<typename Iter,class Compare>
 void pdqsort(Iter begin, Iter end) {::pdq::sort(begin, end, std::less<typename std::iterator_traits<Iter>::value_type>());}
-
 
 #undef PDQSORT_PREFER_MOVE
 
