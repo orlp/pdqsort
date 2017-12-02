@@ -34,53 +34,53 @@
 #endif
 
 
-std::vector<int> shuffled_int(size_t size, std::mt19937_64& rng) {
+std::vector<int> shuffled_int(int size, std::mt19937_64& rng) {
     std::vector<int> v; v.reserve(size);
     for (int i = 0; i < size; ++i) v.push_back(i);
     std::shuffle(v.begin(), v.end(), rng);
     return v;
 }
 
-std::vector<int> shuffled_16_values_int(size_t size, std::mt19937_64& rng) {
+std::vector<int> shuffled_16_values_int(int size, std::mt19937_64& rng) {
     std::vector<int> v; v.reserve(size);
     for (int i = 0; i < size; ++i) v.push_back(i % 16);
     std::shuffle(v.begin(), v.end(), rng);
     return v;
 }
 
-std::vector<int> all_equal_int(size_t size, std::mt19937_64& rng) {
+std::vector<int> all_equal_int(int size, std::mt19937_64&) {
     std::vector<int> v; v.reserve(size);
     for (int i = 0; i < size; ++i) v.push_back(0);
     return v;
 }
 
-std::vector<int> ascending_int(size_t size, std::mt19937_64& rng) {
+std::vector<int> ascending_int(int size, std::mt19937_64&) {
     std::vector<int> v; v.reserve(size);
     for (int i = 0; i < size; ++i) v.push_back(i);
     return v;
 }
 
-std::vector<int> descending_int(size_t size, std::mt19937_64& rng) {
+std::vector<int> descending_int(int size, std::mt19937_64&) {
     std::vector<int> v; v.reserve(size);
     for (int i = size - 1; i >= 0; --i) v.push_back(i);
     return v;
 }
 
-std::vector<int> pipe_organ_int(size_t size, std::mt19937_64& rng) {
+std::vector<int> pipe_organ_int(int size, std::mt19937_64&) {
     std::vector<int> v; v.reserve(size);
     for (int i = 0; i < size/2; ++i) v.push_back(i);
     for (int i = size/2; i < size; ++i) v.push_back(size - i);
     return v;
 }
 
-std::vector<int> push_front_int(size_t size, std::mt19937_64& rng) {
+std::vector<int> push_front_int(int size, std::mt19937_64&) {
     std::vector<int> v; v.reserve(size);
     for (int i = 1; i < size; ++i) v.push_back(i);
     v.push_back(0);
     return v;
 }
 
-std::vector<int> push_middle_int(size_t size, std::mt19937_64& rng) {
+std::vector<int> push_middle_int(int size, std::mt19937_64&) {
     std::vector<int> v; v.reserve(size);
     for (int i = 0; i < size; ++i) {
         if (i != size/2) v.push_back(i);
@@ -98,11 +98,11 @@ void heapsort(Iter begin, Iter end, Compare comp) {
 
 
 
-int main(int argc, char** argv) {
+int main() {
     auto seed = std::time(0);
     std::mt19937_64 el;
 
-    typedef std::vector<int> (*DistrF)(size_t, std::mt19937_64&);
+    typedef std::vector<int> (*DistrF)(int, std::mt19937_64&);
     typedef void (*SortF)(std::vector<int>::iterator, std::vector<int>::iterator, std::less<int>);
 
     std::pair<std::string, DistrF> distributions[] = {
@@ -133,7 +133,7 @@ int main(int argc, char** argv) {
             for (auto size : sizes) {
                 std::chrono::time_point<std::chrono::high_resolution_clock> total_start, total_end;
                 std::vector<uint64_t> cycles;
-                
+
                 total_start = std::chrono::high_resolution_clock::now();
                 total_end = std::chrono::high_resolution_clock::now();
                 while (std::chrono::duration_cast<std::chrono::milliseconds>(total_end - total_start).count() < 5000) {
@@ -141,14 +141,14 @@ int main(int argc, char** argv) {
                     uint64_t start = rdtsc();
                     sort.second(v.begin(), v.end(), std::less<int>());
                     uint64_t end = rdtsc();
-                    cycles.push_back(double(end - start) / size + 0.5);
+                    cycles.push_back(uint64_t(double(end - start) / size + 0.5));
                     total_end = std::chrono::high_resolution_clock::now();
                     // if (!std::is_sorted(v.begin(), v.end())) {
                     //     std::cerr << "sort failed: ";
                     //     std::cerr << size << " " << distribution.first << " " << sort.first << "\n";
                     // }
                 }
-                
+
                 std::sort(cycles.begin(), cycles.end());
 
                 std::cerr << size << " " << distribution.first << " " << sort.first
