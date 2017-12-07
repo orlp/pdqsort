@@ -17,6 +17,8 @@
        being the original software.
 
     3. This notice may not be removed or altered from any source distribution.
+
+    [Note - June, 2017: I have added a namespace while maintaining backwards compatibility - Daniel Baker.]
 */
 
 
@@ -37,6 +39,8 @@
     #define PDQSORT_PREFER_MOVE(x) (x)
 #endif
 
+
+namespace pdq {
 
 namespace pdqsort_detail {
     enum {
@@ -505,7 +509,7 @@ namespace pdqsort_detail {
 
 
 template<class Iter, class Compare>
-inline void pdqsort(Iter begin, Iter end, Compare comp) {
+inline void sort(Iter begin, Iter end, Compare comp) {
     if (begin == end) return;
 
 #if __cplusplus >= 201103L
@@ -520,24 +524,30 @@ inline void pdqsort(Iter begin, Iter end, Compare comp) {
 }
 
 template<class Iter>
-inline void pdqsort(Iter begin, Iter end) {
+inline void sort(Iter begin, Iter end) {
     typedef typename std::iterator_traits<Iter>::value_type T;
-    pdqsort(begin, end, std::less<T>());
+    ::pdq::sort(begin, end, std::less<T>());
 }
 
 template<class Iter, class Compare>
-inline void pdqsort_branchless(Iter begin, Iter end, Compare comp) {
+inline void sort_branchless(Iter begin, Iter end, Compare comp) {
     if (begin == end) return;
     pdqsort_detail::pdqsort_loop<Iter, Compare, true>(
         begin, end, comp, pdqsort_detail::log2(end - begin));
 }
 
 template<class Iter>
-inline void pdqsort_branchless(Iter begin, Iter end) {
+inline void sort_branchless(Iter begin, Iter end) {
     typedef typename std::iterator_traits<Iter>::value_type T;
-    pdqsort_branchless(begin, end, std::less<T>());
+    ::pdq::sort_branchless(begin, end, std::less<T>());
 }
 
+} // namespace pdq
+
+template<typename Iter,class Compare>
+void pdqsort(Iter begin, Iter end, Compare cmp) {::pdq::sort(begin, end, cmp);}
+template<typename Iter,class Compare>
+void pdqsort(Iter begin, Iter end) {::pdq::sort(begin, end, std::less<typename std::iterator_traits<Iter>::value_type>());}
 
 #undef PDQSORT_PREFER_MOVE
 
