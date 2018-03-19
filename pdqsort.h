@@ -140,7 +140,7 @@ namespace pdqsort_detail {
                 while (sift != begin && comp(tmp, *--sift_1));
 
                 *sift = PDQSORT_PREFER_MOVE(tmp);
-                limit += cur - sift;
+                limit += int(cur - sift);
             }
         }
 
@@ -275,7 +275,7 @@ namespace pdqsort_detail {
         }
 
         int l_size = 0, r_size = 0;
-        int unknown_left = (last - first) - ((num_r || num_l) ? block_size : 0);
+        int unknown_left = int((last - first) - ((num_r || num_l) ? block_size : 0));
         if (num_r) {
             // Handle leftover block by assigning the unknown elements to the other block.
             l_size = unknown_left;
