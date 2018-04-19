@@ -8,7 +8,7 @@ All code is available for free under the zlib license.
 
     Best        Average     Worst       Memory      Stable      Deterministic
     n           n log n     n log n     log n       No          Yes
-    
+
 ### Usage
 
 `pdqsort` is a drop-in replacement for [`std::sort`](http://en.cppreference.com/w/cpp/algorithm/sort).
@@ -69,13 +69,15 @@ Mispredictions don't affect Quicksort" by Stefan Edelkamp and Armin Weiss. In sh
 branch predictor by using small buffers (entirely in L1 cache) of the indices of elements that need
 to be swapped. We fill these buffers in a branch-free way that's quite elegant (in pseudocode):
 
-    buffer_num = 0; buffer_max_size = 64;
-    for (int i = 0; i < buffer_max_size; ++i) {
-        // With branch:
-        if (elements[i] < pivot) { buffer[buffer_num] = i; buffer_num++; }
-        // Without:
-        buffer[buffer_num] = i; buffer_num += (elements[i] < pivot);
-    }
+```cpp
+buffer_num = 0; buffer_max_size = 64;
+for (int i = 0; i < buffer_max_size; ++i) {
+    // With branch:
+    if (elements[i] < pivot) { buffer[buffer_num] = i; buffer_num++; }
+    // Without:
+    buffer[buffer_num] = i; buffer_num += (elements[i] < pivot);
+}
+```
 
 This is only a speedup if the comparison function itself is branchless, however. By default pdqsort
 will detect this if you're using C++11 or higher, the type you're sorting is arithmetic (e.g.
@@ -114,4 +116,4 @@ Where n is the number of elements, and p is the percentile of the pivot after pa
 `T(n, 1/2)` is the best case for quicksort. On modern systems heapsort is profiled to be
 approximately 1.8 to 2 times as slow as quicksort. Choosing p such that `T(n, 1/2) / T(n, p) ~= 1.9`
 as n gets big will ensure that we will only switch to heapsort if it would speed up the sorting.
-p = 1/8 is a reasonably close value and is cheap to compute on every platform using a bitshift. 
+p = 1/8 is a reasonably close value and is cheap to compute on every platform using a bitshift.
