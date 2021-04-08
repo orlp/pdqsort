@@ -167,7 +167,8 @@ namespace pdqsort_detail {
 #else
         std::size_t ip = reinterpret_cast<std::size_t>(p);
 #endif
-        ip = (ip + cacheline_size - 1) & -cacheline_size;
+        int icacheline_size = static_cast<int>(cacheline_size);
+        ip = (ip + icacheline_size - 1) & -icacheline_size;
         return reinterpret_cast<T*>(ip);
     }
 
