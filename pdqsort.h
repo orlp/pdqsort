@@ -139,9 +139,9 @@ namespace pdqsort_detail {
 
                 *sift = PDQSORT_PREFER_MOVE(tmp);
                 limit += cur - sift;
+
+                if (limit > partial_insertion_sort_limit) return false;
             }
-            
-            if (limit > partial_insertion_sort_limit) return false;
         }
 
         return true;
