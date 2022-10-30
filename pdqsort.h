@@ -481,12 +481,16 @@ namespace pdqsort_detail {
                 if (already_partitioned && partial_insertion_sort(begin, pivot_pos, comp)
                                         && partial_insertion_sort(pivot_pos + 1, end, comp)) return;
             }
-                
-            // Sort the left partition first using recursion and do tail recursion elimination for
-            // the right-hand partition.
-            pdqsort_loop<Iter, Compare, Branchless>(begin, pivot_pos, comp, bad_allowed, leftmost);
-            begin = pivot_pos + 1;
-            leftmost = false;
+
+            // Sort smaller range with recursion and larger with tail recursion elimination.
+            if (l_size < r_size) {
+                pdqsort_loop<Iter, Compare, Branchless>(begin, pivot_pos, comp, bad_allowed, leftmost);
+                begin = pivot_pos + 1;
+                leftmost = false;
+            } else {
+                pdqsort_loop<Iter, Compare, Branchless>(pivot_pos + 1, end, comp, bad_allowed, false);
+                end = pivot_pos;
+            }
         }
     }
 }
