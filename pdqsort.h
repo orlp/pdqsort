@@ -67,10 +67,39 @@ namespace pdqsort_detail {
     // Returns floor(log2(n)), assumes n > 0.
     template<class T>
     inline int log2(T n) {
+#if __cplusplus >= 201103L
+        typename std::make_unsigned<T>::type u = n;
+#else
+        if (n < 0) {
+            return sizeof(T) * CHAR_BIT - 1;
+        }
+        T           u  = n;
+#endif
+#if defined(__has_builtin)
+# if __has_builtin(__builtin_clz)
+        if (sizeof(T) <= sizeof(int)) {
+            return sizeof(int) * CHAR_BIT - __builtin_clz(u) - 1;
+        }
+# endif
+# if __has_builtin(__builtin_clzl)
+        if (sizeof(T) <= sizeof(int)) {
+            return sizeof(long) * CHAR_BIT - __builtin_clzl(u) - 1;
+        }
+# endif
+# if __has_builtin(__builtin_clzll) && __cplusplus >= 201103L
+        if (sizeof(T) <= sizeof(long long)) {
+            return sizeof(long long) * CHAR_BIT - __builtin_clzll(u) - 1;
+        }
+# endif
+#endif
         int log = 0;
-        while (n >>= 1) ++log;
+        int cnt = sizeof(T) * CHAR_BIT;
+        while (cnt >>= 1) {
+            log += (u >> (log + cnt)) ? cnt : 0;
+        }
         return log;
     }
+
 
     // Sorts [begin, end) using insertion sort with the given comparison function.
     template<class Iter, class Compare>
