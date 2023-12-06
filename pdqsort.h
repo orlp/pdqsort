@@ -226,10 +226,10 @@ namespace pdqsort_detail {
             // The following branchless partitioning is derived from "BlockQuicksort: How Branch
             // Mispredictions don’t affect Quicksort" by Stefan Edelkamp and Armin Weiss, but
             // heavily micro-optimized.
-            unsigned char offsets_l_storage[block_size + cacheline_size];
-            unsigned char offsets_r_storage[block_size + cacheline_size];
-            unsigned char* offsets_l = align_cacheline(offsets_l_storage);
-            unsigned char* offsets_r = align_cacheline(offsets_r_storage);
+            unsigned char offsets_l_storage[block_size * 1];
+            unsigned char offsets_r_storage[block_size * 1];
+            unsigned char* offsets_l = offsets_l_storage;
+            unsigned char* offsets_r = offsets_r_storage;
 
             Iter offsets_l_base = first;
             Iter offsets_r_base = last;
