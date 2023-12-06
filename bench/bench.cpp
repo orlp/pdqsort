@@ -132,7 +132,7 @@ int main() {
 
             for (auto size : sizes) {
                 std::chrono::time_point<std::chrono::high_resolution_clock> total_start, total_end;
-                std::vector<uint64_t> cycles;
+                std::vector<double> cycles;
 
                 total_start = std::chrono::high_resolution_clock::now();
                 total_end = std::chrono::high_resolution_clock::now();
@@ -141,7 +141,7 @@ int main() {
                     uint64_t start = rdtsc();
                     sort.second(v.begin(), v.end(), std::less<int>());
                     uint64_t end = rdtsc();
-                    cycles.push_back(uint64_t(double(end - start) / size + 0.5));
+                    cycles.push_back(double(end - start) / double(size));
                     total_end = std::chrono::high_resolution_clock::now();
                     // if (!std::is_sorted(v.begin(), v.end())) {
                     //     std::cerr << "sort failed: ";

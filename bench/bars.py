@@ -28,7 +28,7 @@ for filename in os.listdir("profiles"):
         size, distribution, algo, *results = line.split()
         size = int(size)
         distribution = distribution_names[distribution]
-        results = [int(result) for result in results]
+        results = [float(result) for result in results]
         if not size in data: data[size] = {}
         if not distribution in data[size]: data[size][distribution] = {}
         data[size][distribution][algo] = results
