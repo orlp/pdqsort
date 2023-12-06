@@ -428,6 +428,7 @@ namespace pdqsort_detail {
             // recurse on the left partition, since it's sorted (all equal).
             if (!leftmost && !comp(*(begin - 1), *begin)) {
                 begin = partition_left(begin, end, comp) + 1;
+                leftmost = false;
                 continue;
             }
 
@@ -478,8 +479,19 @@ namespace pdqsort_detail {
             } else {
                 // If we were decently balanced and we tried to sort an already partitioned
                 // sequence try to use insertion sort.
-                if (already_partitioned && partial_insertion_sort(begin, pivot_pos, comp)
-                                        && partial_insertion_sort(pivot_pos + 1, end, comp)) return;
+                if (already_partitioned && partial_insertion_sort(begin, pivot_pos, comp)) {
+                    if(partial_insertion_sort(pivot_pos + 1, end, comp)) return;
+                    begin = pivot_pos + 1;
+                    leftmost = false;
+                    continue;
+                }
+
+            }
+
+            if((end - (pivot_pos + 1)) < insertion_sort_threshold) {
+                unguarded_insertion_sort(pivot_pos + 1, end, comp);
+                end = pivot_pos;
+                continue;
             }
                 
             // Sort the left partition first using recursion and do tail recursion elimination for
